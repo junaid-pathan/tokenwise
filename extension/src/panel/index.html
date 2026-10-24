@@ -1,21 +1,127 @@
 <!doctype html>
-<!-- B (PR B8): side panel. H-pattern shifter, answer view, grid light,
-     alert banner, Narrator line, 3-card first-run guide. Stub for now. -->
+<!-- Downshift side panel (PR B8). Owner: B / Junaid.
+     MV3: no inline scripts — all behaviour lives in external .mjs modules. -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Downshift</title>
-    <style>
-      body { margin: 0; width: 360px; font-family: system-ui, sans-serif;
-             background: #0b0f14; color: #e6edf3; padding: 16px; }
-      h1 { font-size: 16px; margin: 0 0 8px; }
-      .muted { color: #8b949e; font-size: 12px; }
-    </style>
+    <link rel="stylesheet" href="panel.css" />
   </head>
   <body>
-    <h1>Downshift</h1>
-    <p class="muted">Side panel stub. Owner: B / Junaid. Build in PR B8.</p>
-    <script src="panel.js"></script>
+    <!-- Polite live region for grid-level changes and the narrator line. -->
+    <div id="live" class="visually-hidden" aria-live="polite" role="status"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <h1>Downshift</h1>
+      </div>
+      <div
+        id="grid-light"
+        class="grid-light"
+        role="status"
+        aria-label="Grid status: connecting"
+      >
+        <span class="dot" aria-hidden="true"></span>
+        <span class="grid-word" id="grid-word">Connecting</span>
+        <span class="grid-load" id="grid-load"></span>
+      </div>
+    </header>
+
+    <!-- Grid Alert / note banner. role=alert so red announces assertively. -->
+    <div id="banner" class="banner" role="alert" aria-live="assertive"></div>
+
+    <section class="card narrator" aria-label="Narrator">
+      <span class="tag">Narrator</span>
+      <span id="narrator-text">Waiting for the engine&#8230;</span>
+    </section>
+
+    <!-- Hero: H-pattern gear shifter as a radio group. -->
+    <section class="card shifter" aria-labelledby="shifter-h2">
+      <h2 id="shifter-h2">Gear</h2>
+      <div
+        id="shifter"
+        class="shifter-grid"
+        role="radiogroup"
+        aria-label="Gear shifter. Use arrow keys to change gear."
+      >
+        <button type="button" class="gear auto" role="radio" data-pos="auto" aria-checked="true">
+          <span class="name">Auto</span>
+          <span class="num">Picks the gear for you</span>
+        </button>
+        <button type="button" class="gear g1" role="radio" data-pos="1" aria-checked="false">
+          <span class="name">Quick</span>
+          <span class="num">Gear 1</span>
+          <span class="desc">a fact, a sum, a one-line rewrite</span>
+        </button>
+        <button type="button" class="gear g2" role="radio" data-pos="2" aria-checked="false">
+          <span class="name">Light</span>
+          <span class="num">Gear 2</span>
+          <span class="desc">short explanation, summarize, extract</span>
+        </button>
+        <button type="button" class="gear g3" role="radio" data-pos="3" aria-checked="false">
+          <span class="name">Standard</span>
+          <span class="num">Gear 3</span>
+          <span class="desc">multi-paragraph writing, simple code</span>
+        </button>
+        <button type="button" class="gear g4" role="radio" data-pos="4" aria-checked="false">
+          <span class="name">Heavy</span>
+          <span class="num">Gear 4</span>
+          <span class="desc">multi-step reasoning, real code</span>
+        </button>
+        <button type="button" class="gear g5" role="radio" data-pos="5" aria-checked="false">
+          <span class="name">Max</span>
+          <span class="num">Gear 5</span>
+          <span class="desc">hard math, architecture, long writing</span>
+        </button>
+      </div>
+      <p class="shifter-help">
+        Lighter gears use less energy. When the grid is busy, shift down.
+      </p>
+    </section>
+
+    <!-- Answer view -->
+    <section class="card" aria-labelledby="ask-h2">
+      <h2 id="ask-h2">Ask</h2>
+      <label for="prompt">Your prompt</label>
+      <textarea id="prompt" placeholder="Type a question&#8230;"></textarea>
+      <div class="row">
+        <button type="button" class="btn" id="ask-btn">Ask</button>
+        <label class="toggle">
+          <input type="checkbox" id="protected" />
+          Best answer
+        </label>
+      </div>
+      <p class="shifter-help" id="protected-help">
+        Best answer never shifts down, even when the grid is busy.
+      </p>
+
+      <div id="answer" class="answer" aria-live="polite" hidden>
+        <div id="answer-text" class="answer-text"></div>
+        <div id="answer-meta" class="answer-meta"></div>
+      </div>
+      <div id="answer-error" class="error" role="alert" hidden></div>
+    </section>
+
+    <div class="row">
+      <button type="button" class="btn secondary" id="how-btn">How it works</button>
+    </div>
+
+    <!-- First-run guide (3 cards) -->
+    <div id="guide" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+      <div class="guide">
+        <div class="dots" aria-hidden="true">
+          <i data-active="true"></i><i></i><i></i>
+        </div>
+        <h3 id="guide-title"></h3>
+        <p id="guide-body"></p>
+        <div class="nav">
+          <button type="button" class="btn secondary" id="guide-skip">Skip</button>
+          <button type="button" class="btn" id="guide-next">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="panel.js"></script>
   </body>
 </html>
