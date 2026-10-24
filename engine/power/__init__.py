@@ -1,6 +1,7 @@
 """A (PR A2): Power meter. Polls the Colab /power endpoint and integrates energy.
 
-At the Hardware gate we chose Colab T4 as the power source (POWER_SOURCE=cloud).
+The power source is chosen jointly at the Hardware gate (POWER_SOURCE in .env).
+The sampler below reads the Colab T4 meter when POWER_URL is set.
 
 Contract:
     energy_between(t0, t1) -> (joules: float, source: str)
