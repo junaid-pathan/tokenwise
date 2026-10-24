@@ -142,6 +142,14 @@
     .rows div:last-child { border-bottom: none; }
     footer { margin: auto 12px 12px; font-size: 10.5px; color: #6b7a70; line-height: 1.4; }
     .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+    .tight[hidden] { display: none; }
+    .tnum { font-size: 16px; font-weight: 700; margin-top: 6px; color: #2f6b45; }
+    .tfix { font-size: 11.5px; color: #5b6b60; margin-top: 2px; }
+    .tprev { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #f4f7f2; font-size: 12.5px;
+      white-space: pre-wrap; max-height: 120px; overflow-y: auto; border: 1px dashed #c9d6c5; }
+    .apply { margin-top: 10px; width: 100%; padding: 8px; border: none; border-radius: 8px; background: #2f6b45;
+      color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .apply:hover { background: #255838; }
     .reset { background: none; border: none; color: #6b7a70; text-decoration: underline; cursor: pointer; font-size: 10.5px; padding: 0; }
   `;
 
@@ -163,6 +171,13 @@
       <section class="card" aria-label="This prompt">
         <div class="label">This prompt</div>
         <div data-k="live"><div class="empty">Start typing — I'll pick the right gear and model.</div></div>
+      </section>
+      <section class="card tight" aria-label="Tighten your prompt" data-k="tight" hidden>
+        <div class="label">✂️ Tighten · fewer tokens</div>
+        <div class="tnum" data-k="tnum"></div>
+        <div class="tfix" data-k="tfix"></div>
+        <div class="tprev" data-k="tprev"></div>
+        <button class="apply" data-k="apply">Apply</button>
       </section>
       <section class="card" aria-label="Your footprint">
         <div class="label">Your footprint</div>
@@ -195,6 +210,7 @@
     tab = root.querySelector(".tab");
     root.querySelector(".close").addEventListener("click", () => setOpen(false));
     tab.addEventListener("click", () => setOpen(true));
+    $("apply").addEventListener("click", applyTighten);
     $("reset").addEventListener("click", () => {
       stats = { prompts: 0, right_sized: 0, wh_used: 0, wh_saved: 0 };
       saveStats();
@@ -279,7 +295,50 @@
     renderEngine();
   }
 
+  // --- tighten ----------------------------------------------------------------------
+  let tightText = null;
+
+  function renderTighten() {
+    const card = $("tight");
+    const raw = composerText(findComposer());
+    const r = raw.length >= 3 ? DS.tighten(raw) : null;
+    // Only worth a nudge when it saves at least 2 tokens and 10%.
+    if (!r || r.saved < 2 || r.saved / r.before < 0.1) {
+      tightText = null;
+      card.hidden = true;
+      return;
+    }
+    tightText = r.text;
+    $("tnum").textContent = `${r.before} → ${r.after} tokens · ${Math.round((r.saved / r.before) * 100)}% fewer`;
+    $("tfix").textContent = `Fixed: ${r.changes.join(", ")}`;
+    $("tprev").textContent = r.text;
+    card.hidden = false;
+  }
+
+  // Replace the composer text through the editor's own input path, so
+  // claude.ai's ProseMirror state stays in sync.
+  function applyTighten() {
+    const el = findComposer();
+    if (!el || !tightText) return;
+    el.focus();
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    const ok = document.execCommand && document.execCommand("insertText", false, tightText);
+    if (!ok) {
+      el.textContent = tightText;
+      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText" }));
+    }
+    $("flash").textContent = "Prompt tightened ✂️";
+    setTimeout(() => ($("flash").textContent = ""), 3000);
+    onInput();
+  }
+
   function clearLive() {
+    if (root) $("tight").hidden = true;
+    tightText = null;
     // Drop any pending or in-flight triage so a late reply can't bring the
     // old suggestion back after a send or delete.
     clearTimeout(timer);
@@ -313,6 +372,7 @@
     timer = setTimeout(async () => {
       const prompt = currentPrompt();
       if (prompt.length < 3) return clearLive();
+      renderTighten();
       const mine = ++seq;
       const t = await triage(prompt);
       if (mine === seq) renderLive(t, prompt);

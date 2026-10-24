@@ -71,7 +71,8 @@
   // --- demo pins: fixed answers for the stage prompts, checked before anything else
   const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9+]/g, "");
   const DEMO_EASY = new Set(["2+2", "whatis2+2", "whats2+2"]);
-  const DEMO_HARD = /multiverse|multiuniverse/;
+  // Stage prompt: "If the multiverse is real, is there another me out there?"
+  const DEMO_HARD = /multiverse|multiuniverse|parallelunivers/;
 
   function demoPin(prompt) {
     const n = norm(prompt);
