@@ -142,7 +142,13 @@
     .rows div:last-child { border-bottom: none; }
     footer { margin: auto 12px 12px; font-size: 10.5px; color: #6b7a70; line-height: 1.4; }
     .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-    .tight[hidden] { display: none; }
+    .tight[hidden], .ask[hidden], .askout[hidden], .apply[hidden] { display: none; }
+    .ask { border: 2px solid #22c55e; }
+    .asksub { font-size: 12.5px; color: #3c4a40; margin-top: 4px; }
+    .askout { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: #f4f7f2; font-size: 13px;
+      line-height: 1.45; white-space: pre-wrap; max-height: 260px; overflow-y: auto; }
+    .askmeta { font-size: 11px; color: #5b6b60; margin-top: 6px; }
+    .apply:disabled { opacity: 0.6; cursor: progress; }
     .tnum { font-size: 16px; font-weight: 700; margin-top: 6px; color: #2f6b45; }
     .tfix { font-size: 11.5px; color: #5b6b60; margin-top: 2px; }
     .tprev { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #f4f7f2; font-size: 12.5px;
@@ -171,6 +177,13 @@
       <section class="card" aria-label="This prompt">
         <div class="label">This prompt</div>
         <div data-k="live"><div class="empty">Start typing — I'll pick the right gear and model.</div></div>
+      </section>
+      <section class="card ask" aria-label="Ask here instead" data-k="ask" hidden>
+        <div class="label">⚡ Ask here instead</div>
+        <div class="asksub" data-k="asksub">Simple enough for a small model — skip Claude and answer it here.</div>
+        <button class="apply" data-k="askbtn">Ask here</button>
+        <div class="askout" data-k="askout" aria-live="polite" hidden></div>
+        <div class="askmeta" data-k="askmeta"></div>
       </section>
       <section class="card tight" aria-label="Tighten your prompt" data-k="tight" hidden>
         <div class="label">✂️ Tighten · fewer tokens</div>
@@ -211,6 +224,7 @@
     root.querySelector(".close").addEventListener("click", () => setOpen(false));
     tab.addEventListener("click", () => setOpen(true));
     $("apply").addEventListener("click", applyTighten);
+    $("askbtn").addEventListener("click", askHere);
     $("reset").addEventListener("click", () => {
       stats = { prompts: 0, right_sized: 0, wh_used: 0, wh_saved: 0 };
       saveStats();
@@ -293,6 +307,106 @@
     why.textContent = `Why: ${t.reason}`;
     live.querySelector(".model").after(why);
     renderEngine();
+    renderAsk(t.gear);
+  }
+
+  // --- ask here: simple prompts skip Claude entirely ---------------------------------
+  // Haiku-level prompts (Gears 1-2) get answered right here: plain arithmetic by
+  // the in-browser calculator, everything else by the engine's /v1/answer, which
+  // routes to the small Colab models and measures the energy used.
+  let askState = "idle"; // idle | loading | answered
+
+  function renderAsk(gear) {
+    if (askState === "loading") return;
+    askState = "idle";
+    const card = $("ask");
+    card.hidden = gear > 2;
+    $("askbtn").hidden = false;
+    $("askbtn").disabled = false;
+    $("askbtn").textContent = "Ask here";
+    $("askout").hidden = true;
+    $("askout").textContent = "";
+    $("askmeta").textContent = "";
+  }
+
+  function hideAsk() {
+    if (askState !== "idle") return;
+    if (root) $("ask").hidden = true;
+  }
+
+  function askEngine(prompt) {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage(
+          { type: "ds.answer", body: { prompt, mode: "auto", source: "extension" } },
+          (resp) => resolve(!chrome.runtime.lastError && resp && resp.ok ? resp.data : null)
+        );
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  }
+
+  // Empty claude.ai's composer so the prompt isn't also sent to Claude.
+  function clearComposer() {
+    const el = findComposer();
+    if (!el) return;
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    if (!(document.execCommand && document.execCommand("delete"))) el.textContent = "";
+  }
+
+  async function askHere() {
+    if (!last || askState === "loading") return;
+    const { prompt, current } = last;
+    askState = "loading";
+    const btn = $("askbtn");
+    btn.disabled = true;
+    btn.textContent = "Asking a small model…";
+
+    let text, meta, whUsed;
+    const quick = DS.quickAnswer(prompt);
+    if (quick !== null) {
+      text = quick;
+      whUsed = 0;
+      meta = "Answered in your browser · no model, no network · 0 Wh";
+    } else {
+      const r = await askEngine(prompt);
+      if (!r) {
+        askState = "idle";
+        btn.disabled = false;
+        btn.textContent = "Ask here";
+        $("askmeta").textContent = "Couldn't reach the Downshift engine on localhost:8000. Start it, or send this to Claude.";
+        return;
+      }
+      text = r.text;
+      whUsed = (Number(r.energy_j) || 0) / 3600;
+      meta = `Gear ${r.gear_used} · ${r.model} · ${r.latency_ms} ms · ${Number(r.energy_j).toFixed(1)} J ${r.energy_source}`;
+    }
+
+    const whSaved = Math.max(0, DS.WH_PER_ANSWER[current] - whUsed);
+    stats.prompts += 1;
+    stats.right_sized += 1;
+    stats.wh_used += whUsed;
+    stats.wh_saved += whSaved;
+    saveStats();
+    renderImpact();
+
+    askState = "answered";
+    btn.hidden = true;
+    $("askout").textContent = text;
+    $("askout").hidden = false;
+    $("askmeta").textContent = `${meta} · saved ~${fmtWh(whSaved)} vs ${current}`;
+    $("flash").textContent = `+${fmtTree(DS.impact(whSaved).tree_min)} saved — answered without Claude 🌱`;
+    setTimeout(() => ($("flash").textContent = ""), 4000);
+
+    pastedExtra = [];
+    clearComposer();
+    clearLive();
   }
 
   // --- tighten ----------------------------------------------------------------------
@@ -338,6 +452,7 @@
 
   function clearLive() {
     if (root) $("tight").hidden = true;
+    hideAsk(); // an answer on screen stays until the next prompt or chat
     tightText = null;
     // Drop any pending or in-flight triage so a late reply can't bring the
     // old suggestion back after a send or delete.
@@ -476,6 +591,7 @@
     if (location.pathname === lastPath) return;
     lastPath = location.pathname;
     pastedExtra = [];
+    if (askState === "answered") askState = "idle";
     clearLive();
     if (isNewChat()) {
       chatBaseline = null;

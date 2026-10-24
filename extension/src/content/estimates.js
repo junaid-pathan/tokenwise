@@ -83,8 +83,57 @@
     return null;
   }
 
+  // --- in-browser calculator: answers plain arithmetic with no model at all ----
+  // Small recursive-descent parser over + - * / ^ and parentheses (no eval).
+  function calc(expr) {
+    const toks = expr.match(/\d*\.?\d+|[-+*/^()]/g);
+    if (!toks || toks.join("") !== expr.replace(/\s+/g, "")) return null;
+    let i = 0;
+    const peek = () => toks[i];
+    const num = () => {
+      const t = toks[i++];
+      if (t === "(") { const v = add(); if (toks[i++] !== ")") throw 0; return v; }
+      if (t === "-") return -num();
+      const v = parseFloat(t);
+      if (Number.isNaN(v)) throw 0;
+      return v;
+    };
+    const pow = () => { const b = num(); return peek() === "^" ? (i++, b ** pow()) : b; };
+    const mul = () => {
+      let v = pow();
+      while (peek() === "*" || peek() === "/") v = toks[i++] === "*" ? v * pow() : v / pow();
+      return v;
+    };
+    const add = () => {
+      let v = mul();
+      while (peek() === "+" || peek() === "-") v = toks[i++] === "+" ? v + mul() : v - mul();
+      return v;
+    };
+    try {
+      const v = add();
+      return i === toks.length && Number.isFinite(v) ? v : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  const fmtNum = (v) => String(Math.round(v * 1e6) / 1e6);
+
+  function quickAnswer(prompt) {
+    let s = (prompt || "").toLowerCase().trim()
+      .replace(/^(what\s+is|what's|whats|calculate|compute|solve)\s+/, "")
+      .replace(/[?=.!\s]+$/, "")
+      .replace(/×|\bx\b|\btimes\b/g, "*").replace(/÷|\bdivided by\b/g, "/")
+      .replace(/\bplus\b/g, "+").replace(/\bminus\b/g, "-");
+    const pct = s.match(/^(\d*\.?\d+)\s*(%|percent)\s+of\s+(\d*\.?\d+)$/);
+    if (pct) return fmtNum((parseFloat(pct[1]) / 100) * parseFloat(pct[3]));
+    if (!/\d/.test(s) || !/[-+*/^]/.test(s)) return null;
+    const v = calc(s);
+    return v === null ? null : fmtNum(v);
+  }
+
   globalThis.DS = {
     GEARS, GEAR_MODEL, MODEL_RANK, WH_PER_ANSWER, G_CO2_PER_WH,
-    co2, impact, rulesTriage, demoPin,
+    co2, impact, rulesTriage, demoPin, quickAnswer,
   };
 })();
