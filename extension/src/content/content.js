@@ -282,12 +282,30 @@
     if (root) $("live").innerHTML = `<div class="empty">Start typing — I'll pick the right gear and model.</div>`;
   }
 
+  // claude.ai turns long pastes into a "Pasted content" attachment instead of
+  // composer text, so keep pasted text that didn't land in the composer.
+  let pastedExtra = [];
+
+  function onPaste(e) {
+    const text = ((e.clipboardData && e.clipboardData.getData("text/plain")) || "").trim();
+    if (!text) return;
+    setTimeout(() => {
+      const inComposer = composerText(findComposer()).includes(text.slice(0, 40));
+      if (!inComposer) pastedExtra.push(text);
+      onInput();
+    }, 150);
+  }
+
+  function currentPrompt() {
+    return [composerText(findComposer()), ...pastedExtra].join("\n").trim().slice(0, 4000);
+  }
+
   let timer = null;
   let seq = 0;
-  function onInput(el) {
+  function onInput() {
     clearTimeout(timer);
     timer = setTimeout(async () => {
-      const prompt = composerText(el);
+      const prompt = currentPrompt();
       if (prompt.length < 3) return clearLive();
       const mine = ++seq;
       const t = await triage(prompt);
@@ -326,6 +344,7 @@
       flash.textContent = "";
     }
     setTimeout(() => (flash.textContent = ""), 4000);
+    pastedExtra = [];
     clearLive();
   }
 
@@ -348,12 +367,15 @@
   );
 
   // --- wiring ----------------------------------------------------------------------------
-  function attach() {
-    const el = findComposer();
-    if (!el || el.dataset.downshiftBound) return;
-    el.dataset.downshiftBound = "1";
-    el.addEventListener("input", () => onInput(el));
-  }
+  // Listen on the document, not the composer element: claude.ai swaps the
+  // composer node on navigation, which silently dropped per-element listeners.
+  const inComposer = (t) => {
+    const c = findComposer();
+    return !!(c && t && (c === t || c.contains(t)));
+  };
+  document.addEventListener("input", (e) => inComposer(e.target) && onInput(), true);
+  document.addEventListener("paste", (e) => inComposer(e.target) && onPaste(e), true);
+  document.addEventListener("drop", (e) => inComposer(e.target) && setTimeout(onInput, 150), true);
 
   // claude.ai is a single-page app: watch for route changes to spot new chats.
   let lastPath = null;
@@ -362,13 +384,13 @@
     lastPath = location.pathname;
     if (isNewChat()) {
       chatBaseline = null;
+      pastedExtra = [];
       clearLive();
       setOpen(true);
     }
   }
 
   function tick() {
-    attach();
     onRoute();
     if (!chatBaseline) chatBaseline = detectModel();
   }
