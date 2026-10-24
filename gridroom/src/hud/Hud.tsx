@@ -50,6 +50,59 @@ function Wattmeter({ events }: { events: DownshiftEvent[] }) {
   );
 }
 
+const LEVEL_COLOR: Record<string, string> = {
+  green: "#22c55e",
+  yellow: "#eab308",
+  red: "#ef4444",
+};
+
+function LoadCurve({ events }: { events: DownshiftEvent[] }) {
+  const loads = events.filter((e) => e.type === "grid.load") as Extract<
+    DownshiftEvent,
+    { type: "grid.load" }
+  >[];
+  const state = last(events, "grid.state");
+  const level = state?.level ?? "green";
+  const color = LEVEL_COLOR[level];
+
+  const pts = loads.slice(-120).map((e) => e.load_mw);
+  const w = 212;
+  const h = 48;
+  let path = "";
+  if (pts.length > 1) {
+    const min = Math.min(...pts);
+    const max = Math.max(...pts);
+    const span = max - min || 1;
+    path = pts
+      .map((v, i) => {
+        const x = (i / (pts.length - 1)) * w;
+        const y = h - ((v - min) / span) * h;
+        return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+  }
+  const currentMw = state?.load_mw ?? pts[pts.length - 1] ?? 0;
+
+  return (
+    <div style={PANEL}>
+      <div style={{ color: "#8b949e", textTransform: "uppercase", fontSize: 11 }}>
+        Grid load
+      </div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontSize: 20, fontWeight: 600 }}>
+          {currentMw.toLocaleString(undefined, { maximumFractionDigits: 0 })} MW
+        </span>
+        <span style={{ color, textTransform: "uppercase", fontWeight: 600 }}>
+          {level}
+        </span>
+      </div>
+      <svg width={w} height={h} style={{ marginTop: 6, display: "block" }}>
+        <path d={path} fill="none" stroke={color} strokeWidth={2} />
+      </svg>
+    </div>
+  );
+}
+
 export default function Hud({
   events,
   connected,
@@ -66,6 +119,7 @@ export default function Hud({
         </span>
       </div>
       <Wattmeter events={events} />
+      <LoadCurve events={events} />
     </div>
   );
 }
