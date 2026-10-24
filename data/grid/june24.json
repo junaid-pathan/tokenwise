@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "source": "EIA API v2 electricity/rto/region-data",
+    "respondent": "ISNE",
+    "respondent_name": "ISO New England (ISNE)",
+    "type": "D",
+    "type_name": "Demand",
+    "timezone": "America/New_York (EDT, UTC-4 on this date)",
+    "period_timezone_in_api": "UTC",
+    "date": "2025-06-24",
+    "fetched": "2026-10-24T18:24:52+00:00",
+    "units": "MW",
+    "note": "Hourly demand; EIA periods converted from UTC to local.",
+    "peak_mw": 25898.0,
+    "peak_hour_local": 19
+  },
+  "points": [
+    {
+      "hour": 0,
+      "local_clock": "2025-06-24T00:00:00",
+      "load_mw": 19715.0
+    },
+    {
+      "hour": 1,
+      "local_clock": "2025-06-24T01:00:00",
+      "load_mw": 18868.0
+    },
+    {
+      "hour": 2,
+      "local_clock": "2025-06-24T02:00:00",
+      "load_mw": 17857.0
+    },
+    {
+      "hour": 3,
+      "local_clock": "2025-06-24T03:00:00",
+      "load_mw": 16925.0
+    },
+    {
+      "hour": 4,
+      "local_clock": "2025-06-24T04:00:00",
+      "load_mw": 16730.0
+    },
+    {
+      "hour": 5,
+      "local_clock": "2025-06-24T05:00:00",
+      "load_mw": 16630.0
+    },
+    {
+      "hour": 6,
+      "local_clock": "2025-06-24T06:00:00",
+      "load_mw": 16761.0
+    },
+    {
+      "hour": 7,
+      "local_clock": "2025-06-24T07:00:00",
+      "load_mw": 17596.0
+    },
+    {
+      "hour": 8,
+      "local_clock": "2025-06-24T08:00:00",
+      "load_mw": 18450.0
+    },
+    {
+      "hour": 9,
+      "local_clock": "2025-06-24T09:00:00",
+      "load_mw": 18571.0
+    },
+    {
+      "hour": 10,
+      "local_clock": "2025-06-24T10:00:00",
+      "load_mw": 18747.0
+    },
+    {
+      "hour": 11,
+      "local_clock": "2025-06-24T11:00:00",
+      "load_mw": 19375.0
+    },
+    {
+      "hour": 12,
+      "local_clock": "2025-06-24T12:00:00",
+      "load_mw": 20158.0
+    },
+    {
+      "hour": 13,
+      "local_clock": "2025-06-24T13:00:00",
+      "load_mw": 20975.0
+    },
+    {
+      "hour": 14,
+      "local_clock": "2025-06-24T14:00:00",
+      "load_mw": 21890.0
+    },
+    {
+      "hour": 15,
+      "local_clock": "2025-06-24T15:00:00",
+      "load_mw": 22765.0
+    },
+    {
+      "hour": 16,
+      "local_clock": "2025-06-24T16:00:00",
+      "load_mw": 23717.0
+    },
+    {
+      "hour": 17,
+      "local_clock": "2025-06-24T17:00:00",
+      "load_mw": 24817.0
+    },
+    {
+      "hour": 18,
+      "local_clock": "2025-06-24T18:00:00",
+      "load_mw": 25433.0
+    },
+    {
+      "hour": 19,
+      "local_clock": "2025-06-24T19:00:00",
+      "load_mw": 25898.0
+    },
+    {
+      "hour": 20,
+      "local_clock": "2025-06-24T20:00:00",
+      "load_mw": 25673.0
+    },
+    {
+      "hour": 21,
+      "local_clock": "2025-06-24T21:00:00",
+      "load_mw": 25233.0
+    },
+    {
+      "hour": 22,
+      "local_clock": "2025-06-24T22:00:00",
+      "load_mw": 24144.0
+    },
+    {
+      "hour": 23,
+      "local_clock": "2025-06-24T23:00:00",
+      "load_mw": 22366.0
+    }
+  ]
+}
