@@ -446,15 +446,24 @@
     if (root) $("ask").hidden = true;
   }
 
+  // Resolves { data } on success or { error } with the real reason, so the
+  // card can say whether the engine is down or the page needs a refresh.
   function askEngine(prompt) {
+    const stale = "TokenWise was reloaded. Refresh this tab (F5) and try again.";
     return new Promise((resolve) => {
       try {
         chrome.runtime.sendMessage(
           { type: "ds.answer", body: { prompt, mode: "auto", source: "extension" } },
-          (resp) => resolve(!chrome.runtime.lastError && resp && resp.ok ? resp.data : null)
+          (resp) => {
+            const err = chrome.runtime.lastError;
+            if (err) return resolve({ error: /context invalidated|Receiving end/i.test(err.message) ? stale : err.message });
+            if (resp && resp.ok) return resolve({ data: resp.data });
+            const why = (resp && resp.error) || "no response";
+            resolve({ error: /abort/i.test(why) ? "The tiny AI took too long (Colab may be asleep)." : `Couldn't reach the TokenWise engine on localhost:8000 (${why}).` });
+          }
         );
       } catch (e) {
-        resolve(null);
+        resolve({ error: stale });
       }
     });
   }
@@ -487,14 +496,15 @@
       whUsed = 0;
       meta = "Solved instantly. No AI needed, zero energy";
     } else {
-      const r = await askEngine(prompt);
-      if (!r) {
+      const res = await askEngine(prompt);
+      if (res.error) {
         askState = "idle";
         btn.disabled = false;
         btn.textContent = "Answer it here";
-        $("askmeta").textContent = "Couldn't reach the TokenWise engine on localhost:8000. Start it, or send this to Claude.";
+        $("askmeta").textContent = res.error;
         return;
       }
+      const r = res.data;
       text = r.text;
       whUsed = (Number(r.energy_j) || 0) / 3600;
       const how = r.energy_source === "measured" ? "measured live" : "estimated";
