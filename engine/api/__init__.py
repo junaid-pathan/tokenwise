@@ -60,9 +60,26 @@ def register(bus, app):
             raise HTTPException(status_code=422, detail="prompt is required")
         mode = body.get("mode", "auto")
         protected = bool(body.get("protected", False))
-        prompt_id = body.get("prompt_id") or ("a-" + uuid.uuid4().hex[:8])
+        prompt_id = body.get("prompt_id") or ("ext-" + uuid.uuid4().hex[:8])
+        # Where the prompt came from; the extension panel is "extension". A town
+        # lets the Grid Room spark from a location (optional, defaults sensibly).
+        source = body.get("source", "extension")
+        town = body.get("town")
 
         gear = _resolve_gear(mode, prompt)
+
+        # Announce the prompt so the real Triage + Coordinator route it: that
+        # produces triage.decided + route.decided for this prompt_id, which the
+        # Grid Room sparks on and the Coordinator/scorecard account for.
+        received = {
+            "type": "prompt.received",
+            "prompt_id": prompt_id,
+            "source": source,
+            "chars": len(prompt),
+        }
+        if town:
+            received["town"] = town
+        await bus.publish(received)
 
         # Generate, timing the call so we can integrate energy over the window.
         # Generate off the event loop so the async power sampler keeps polling
