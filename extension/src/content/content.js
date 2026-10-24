@@ -70,7 +70,10 @@
       badge.addEventListener("click", () => {
         const el = findComposer();
         const prompt = composerText(el);
-        if (prompt.length >= 3) handOff(prompt, lastGear);
+        if (prompt.length >= 3) {
+          handOff(prompt, lastGear);
+          askEngine(prompt);
+        }
       });
       document.body.appendChild(badge);
     }
@@ -102,6 +105,72 @@
       chrome.runtime?.sendMessage({ type: "downshift.open", ...payload });
     } catch (e) {
       /* no receiver (panel closed) is fine — storage carries it on next open */
+    }
+  }
+
+  // The panel is a toolbar popup that a page cannot open, so the badge answers
+  // in place: /v1/answer routes the prompt (Triage -> Coordinator, one gear
+  // down on a red grid), generates at that gear and reports the energy used.
+  function ensureCard() {
+    let card = document.getElementById("downshift-card");
+    if (!card) {
+      card = document.createElement("div");
+      card.id = "downshift-card";
+      card.setAttribute("role", "status");
+      Object.assign(card.style, {
+        position: "fixed",
+        bottom: "130px",
+        right: "24px",
+        width: "340px",
+        maxHeight: "50vh",
+        overflowY: "auto",
+        zIndex: "2147483647",
+        font: "13px/1.45 system-ui, sans-serif",
+        color: "#e6edf3",
+        background: "rgba(13,17,23,0.94)",
+        border: "1px solid #30363d",
+        borderRadius: "12px",
+        padding: "12px 14px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        whiteSpace: "pre-wrap",
+      });
+      const close = document.createElement("button");
+      close.textContent = "×";
+      close.setAttribute("aria-label", "Close Downshift answer");
+      Object.assign(close.style, {
+        position: "absolute", top: "4px", right: "8px", background: "none",
+        border: "none", color: "#8b949e", fontSize: "18px", cursor: "pointer",
+      });
+      close.addEventListener("click", () => (card.style.display = "none"));
+      card.appendChild(close);
+      const body = document.createElement("div");
+      body.id = "downshift-card-body";
+      card.appendChild(body);
+      document.body.appendChild(card);
+    }
+    card.style.display = "block";
+    return card.querySelector("#downshift-card-body");
+  }
+
+  async function askEngine(prompt) {
+    const body = ensureCard();
+    body.textContent = "Asking a smaller model…";
+    try {
+      const resp = await fetch(`${ENGINE}/v1/answer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, mode: "auto", source: "extension" }),
+      });
+      if (!resp.ok) throw new Error(`answer ${resp.status}`);
+      const r = await resp.json();
+      const energy = r.energy_j != null
+        ? ` · ${Number(r.energy_j).toFixed(1)} J ${r.energy_source || ""}`
+        : "";
+      body.textContent = `Gear ${r.gear_used} · ${r.latency_ms} ms${energy}
+
+${r.text}`;
+    } catch (e) {
+      body.textContent = "Couldn't reach the Downshift engine on localhost:8000. Is it running?";
     }
   }
 
