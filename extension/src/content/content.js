@@ -82,6 +82,13 @@
           if (chrome.runtime.lastError || !resp || !resp.ok) return fallback();
           engineLive = true;
           const d = resp.data;
+          // Same arbitration as training/model/classifier.py, so an engine on
+          // older code still can't call a debug or proof prompt "Light".
+          const r = DS.rulesTriage(prompt);
+          const words = prompt.split(/\s+/).length;
+          if (r.confidence >= 0.8 && (r.gear >= 3 || (words <= 10 && r.confidence > d.confidence))) {
+            return resolve({ ...r, source: "engine" });
+          }
           resolve({ gear: d.gear, confidence: d.confidence, reason: d.reason, source: "engine" });
         });
       } catch (e) {
