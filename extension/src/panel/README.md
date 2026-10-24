@@ -100,7 +100,7 @@ Background `#0b0f14`, card surface `#161d26`. AA needs 4.5:1 (text) / 3:1 (UI).
 | Yellow `#eab308` on bg | 10.02:1 | AA/UI |
 | Red `#ef4444` on bg | 5.11:1 | AA |
 | Focus ring `#7cc4ff` on bg | 10.25:1 | AA/UI |
-| Alert text `#ffd7d7` on red wash | 13.18:1 | AAA |
+| Alert text `#ffd7d7` on red wash | 12.25:1 | AAA |
 | Button text `#ffffff` on `#2563eb` | 5.17:1 | AA |
 
 Every key pair meets or exceeds WCAG AA.
@@ -151,7 +151,38 @@ with a `src/background.js` (Person A's surface) that calls
 the popup wins on action click, so for a true side panel drop `default_popup`.
 
 ## What was verified
-See the PR description for test output, the contrast table above, and the
-Playwright screenshot walk-through. Loading as a real unpacked Chrome extension
-(exercising `chrome.sidePanel` / `chrome.storage`) was **not** done here — those
-paths degrade gracefully and are covered by the stub/preview checks.
+Unit tests (no install): `node --test extension/src/panel/*.test.mjs` → **41/41
+pass** (shifter, energy, reducer, backoff, config, handoff).
+
+Real-browser check with **Playwright (pinned 1.48.2)** + **headless Chromium
+(SwiftShader)**, panel served statically on `:5180`, pointed at a throwaway
+synthetic stub engine via `?api=`. Verified by looking at screenshots:
+
+- **Hero shifter** renders the H-pattern (Auto + Quick/Light/Standard/Heavy/Max)
+  at 360px popup width and at a wide (520px) side-panel width.
+- **Grid light + banner:** stream drives Green → Yellow → **Red**; at Red the
+  grid light shows the **word "Red"** (+ colour dot + "24,180 MW") and the
+  **Grid Alert** banner appears. Synthetic events are labelled **"(Simulated)"**.
+- **Narrator line** renders and announces.
+- **Keyboard-only shifter:** 3× ArrowDown from Auto selects **Standard (Gear 3)**
+  with a visible focus ring; `aria-checked` tracks selection.
+- **Answer flow (keyboard):** type prompt → focus Ask → Enter → answer renders
+  with chips: gear name+number, latency, energy (measured/estimated), and the
+  estimated Wh-saved range.
+- **First-run guide:** shows on first load, all 3 cards walk by keyboard
+  (Enter/arrows), closes on Done and is remembered.
+- **Reduced motion:** with `emulateMedia({reducedMotion:'reduce'})` the `.gear`
+  `transition-duration` computes to **0s** (all animation disabled).
+- **200% zoom** and **360px width** both reflow without clipping.
+- **Engine offline:** pointed at a dead port, the grid light settles on a
+  stable **"Engine offline"** (sticky across silent background reconnects — it
+  does not flap back to "Connecting").
+- **Accessibility snapshot** (`page.accessibility.snapshot`): **no missing
+  names/roles** on the first-run dialog or the main view.
+
+### Not verified
+Loading as a **real unpacked Chrome extension** (exercising `chrome.sidePanel`,
+`chrome.storage.session/local`, and the content-script hand-off end-to-end) was
+**not** done here. Those `chrome.*` paths degrade gracefully on a plain page and
+are covered by unit tests (`handoff`) and the stub/preview checks; the live
+`chrome.*` wiring with Aru's content script remains to be exercised in Chrome.
