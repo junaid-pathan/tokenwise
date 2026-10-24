@@ -1,0 +1,200 @@
+{"prompt": "A set of 7 spoons costs $21. If each spoon would be sold separately, how much would 5 spoons cost?", "source": "gsm8k", "gear": 1}
+{"prompt": "Write a python function to find minimum number swaps required to make two binary strings equal.", "source": "mbpp", "gear": 4}
+{"prompt": "Which of the following months have 31 days? Classify them as 'yes' or 'no'. January, February, March, April, May, June, July, August, September, October, November and December.", "source": "dolly", "gear": 1}
+{"prompt": "Identify which instrument is string or percussion: Gandingan, Psaltery", "source": "dolly", "gear": 1}
+{"prompt": "write a scene between two actors discussing movie Inception", "source": "dolly", "gear": 3}
+{"prompt": "Identify which instrument is string or percussion: Bell plate, Hululu", "source": "dolly", "gear": 1}
+{"prompt": "Willow’s daughter had a slumber party with 3 of her friends. For breakfast, they wanted pancakes. Willow’s pancake recipe makes 1 serving of 4 pancakes. Each of the girls wanted a serving and a half of pancakes. Willow’s son wanted 3 servings of pancakes. How many single pancakes will Willow make for the girls and her son?", "source": "gsm8k", "gear": 3}
+{"prompt": "Surfers enjoy going to the Rip Curl Myrtle Beach Surf Festival. There were 1500 surfers at the Festival on the first day, 600 more surfers on the second day than the first day, and 2/5 as many surfers on the third day as the first day. What is the average number of surfers at the Festival for the three days?", "source": "gsm8k", "gear": 3}
+{"prompt": "Extract the names of the teams Bennie John Reiges was a part of from the text. Separate them with a comma.", "source": "dolly", "gear": 2}
+{"prompt": "Janet buys 3 pounds of broccoli for $4 a pound, 3 oranges for $0.75 each, a cabbage for $3.75, a pound of bacon for $3, and two pounds of chicken for $3 a pound. What percentage of her grocery budget did she spend on meat, rounded to the nearest percent?", "source": "gsm8k", "gear": 3}
+{"prompt": "from the given text can you please create a list of events associated with life of Brandon Beane.", "source": "dolly", "gear": 2}
+{"prompt": "What are some good items to keep in your pantry if you want to cook Asian food?", "source": "dolly", "gear": 2}
+{"prompt": "In the school election, Eliot got twice as many votes as Shaun, and Shaun got 5 times as many votes as Randy. If Randy got 16 votes, how many did Eliot get?", "source": "gsm8k", "gear": 2}
+{"prompt": "From the passage provided, extract the year Apache Software Foundation was incorporated on.", "source": "dolly", "gear": 1}
+{"prompt": "Write a response to a veteran interested in renting my house", "source": "dolly", "gear": 3}
+{"prompt": "Please write a haiku", "source": "dolly", "gear": 1}
+{"prompt": "Write a function to access dictionary key’s element by index.", "source": "mbpp", "gear": 3}
+{"prompt": "What is mitosis", "source": "dolly", "gear": 2}
+{"prompt": "Write a python function to count occurences of a character in a repeated string.", "source": "mbpp", "gear": 3}
+{"prompt": "John plants a plot of 3 trees by 4 trees. Each tree gives 5 apples. He sells each apple for $.5. How much money does he make, in dollars?", "source": "gsm8k", "gear": 1}
+{"prompt": "How long do bears hibernate?", "source": "dolly", "gear": 1}
+{"prompt": "What are some popular search engines?", "source": "dolly", "gear": 1}
+{"prompt": "Which is stronger - a lion or a tiger?", "source": "dolly", "gear": 1}
+{"prompt": "Identify which instrument is string or percussion: Karyenda, Charango", "source": "dolly", "gear": 2}
+{"prompt": "Which film holds the record for most Academy Award wins?", "source": "dolly", "gear": 1}
+{"prompt": "DeShaun always wins the award in English class for reading the most books over the summer. This year is no different. Summer break is 80 days long. When he arrives, he notifies the teacher that he read 60 books over the summer. Each book averaged 320 pages long. The person closest to him read 75% as much as he did. How many pages did the second person read on average each day of break?", "source": "gsm8k", "gear": 3}
+{"prompt": "John has a very inefficient toilet that uses 5 gallons of water per flush and his household flushed 15 times per day. He replaced it with a toilet that uses 80% less water per flush. How much water did John save in June?", "source": "gsm8k", "gear": 3}
+{"prompt": "Write a function to find length of the string.", "source": "mbpp", "gear": 1}
+{"prompt": "What should I look for when looking for a used car?", "source": "dolly", "gear": 2}
+{"prompt": "Bob is building a vegetable garden. It is 220 feet long by 120 feet wide. Half of the garden is going to be tilled land. A third of the rest of it will have trellises for vining plants, and the rest will be devoted to raised beds. How big will the raised bed section of the garden be?", "source": "gsm8k", "gear": 3}
+{"prompt": "Tell me a few highlights about Madonna's impact on pop music.", "source": "dolly", "gear": 2}
+{"prompt": "Sasha heard that planting trees helps to reduce the local temperature. For each tree planted, the temperature drops .1 degree. A tree costs $6 to plant. If she got the local temperature to drop from 80 to 78.2, how much did it cost to plant the trees?", "source": "gsm8k", "gear": 3}
+{"prompt": "Arman is six times older than his sister. His sister is 2 years old four years ago. In how many years will Arman's age be 40?", "source": "gsm8k", "gear": 3}
+{"prompt": "Make a list of some popular Japanese animations, I haven't watched yet.", "source": "dolly", "gear": 2}
+{"prompt": "Extract the years that Ayrton Senna da Silva won the Formula One World Championship, and put them separated by comma.", "source": "dolly", "gear": 2}
+{"prompt": "Who landed on Timor Island after being cast adrift", "source": "dolly", "gear": 1}
+{"prompt": "John has to get a new blanket. He decides to have a 7 foot by 8-foot quilt made. The quilt costs $40 per square foot. How much does his quilt cost?", "source": "gsm8k", "gear": 3}
+{"prompt": "Tracy, Michelle, and Kati take a road trip that is a total of 1000 miles. Tracy drives 20 miles more than twice Michelle, and Michelle drives 3 times the amount that Katie drives. How many miles does Michelle drive?", "source": "gsm8k", "gear": 3}
+{"prompt": "Identify which instrument is string or percussion: Zabumba, Dan ghita", "source": "dolly", "gear": 2}
+{"prompt": "Find the bird in this list: Avocado, Avocet, Avian", "source": "dolly", "gear": 1}
+{"prompt": "How do I get from Singapore to San Francisco?", "source": "dolly", "gear": 2}
+{"prompt": "Can you write a brief summary for the book \"Braving the Wilderness\" by Brene Brown?", "source": "dolly", "gear": 2}
+{"prompt": "Identify which instrument is string or percussion: Celesta, Masenqo", "source": "dolly", "gear": 1}
+{"prompt": "Write a python function to get the position of rightmost set bit.", "source": "mbpp", "gear": 3}
+{"prompt": "Give me ideas of ways to add a spicy kick to my pho.", "source": "dolly", "gear": 2}
+{"prompt": "Hannah sold 40 pieces of cookies for $0.8 each and 30 cupcakes for $2 each. She used the money to buy 2 sets of measuring spoons for $6.5 each. How much money does she have left?", "source": "gsm8k", "gear": 3}
+{"prompt": "Marco loves trading cards. He has a total of 500 cards on hand, and a fourth of them are duplicates. Marco decides to trade one-fifth of these duplicates for completely new cards to his friend Josh. How many new cards did Marco get?", "source": "gsm8k", "gear": 3}
+{"prompt": "What happened on September 11, 2001?", "source": "dolly", "gear": 1}
+{"prompt": "Manny is making lasagna for dinner with his four friends, Lisa, Raphael, Aaron, and Kai. He needs to know how many pieces to cut the lasagna into to serve it. Manny only wants one piece. Aaron doesn't like lasagna much and will probably only eat garlic bread and salad. Kai is always hungry and will eat twice as much as Manny. Raphael always eats half the amount Manny does, but his sister Lisa loves lasagna and will eat two pieces, plus any Raphael has left of his piece. How many pieces should Manny cut his lasagna into?", "source": "gsm8k", "gear": 4}
+{"prompt": "What channel did the series begin on?", "source": "dolly", "gear": 1}
+{"prompt": "Donny went to the gas station to gas up his tank. He knows his truck holds 150 liters of fuel. His truck already contained 38 liters. How much change will he get from $350 if each liter of fuel costs $3?", "source": "gsm8k", "gear": 3}
+{"prompt": "Write a function to check if any list element is present in the given list.", "source": "mbpp", "gear": 3}
+{"prompt": "Identify which animal species is alive or extinct: Saber-Toothed Tiger, Mountain Plover", "source": "dolly", "gear": 1}
+{"prompt": "Write a function that matches a string that has an a followed by zero or more b's.", "source": "mbpp", "gear": 3}
+{"prompt": "who is called God Of The Offside ?", "source": "dolly", "gear": 1}
+{"prompt": "Give me a list of top five tourist attractions to visit in Europe", "source": "dolly", "gear": 2}
+{"prompt": "Daniel collects Russian dolls that normally cost $4 each. He saves enough money to buy 15 Russian dolls. However, the price suddenly drops to $3 each. How many Russian dolls can he buy now at the discounted price, given his savings?", "source": "gsm8k", "gear": 3}
+{"prompt": "Marge had a winning lottery ticket for $12006 and wanted to spend some of it wisely before using on any fun things. She paid half of the lottery amount for the taxes on her winnings, then put a third of the leftover money towards her student loans. She put $1000 in savings and invested a fifth of that amount in the stock market. How many dollars does she have left for fun?", "source": "gsm8k", "gear": 4}
+{"prompt": "What are the general rules of the Baseball?", "source": "dolly", "gear": 2}
+{"prompt": "Elizabeth, Emma, and Elsa went shopping on Wednesday. In total Emma spent $58 If Elsa spent twice as much as Emma, and Elizabeth spent four times as much as Elsa, how much money did they spend in total?", "source": "gsm8k", "gear": 3}
+{"prompt": "What are the best Japanese RPGs to try out?", "source": "dolly", "gear": 2}
+{"prompt": "Name three different cuts of steak from a cow.", "source": "dolly", "gear": 1}
+{"prompt": "A mailman has to deliver 48 pieces of junk mail. There are 8 houses on the block. 2 of the houses have white mailboxes and 3 have red mailboxes. How many pieces of junk mail will each of those houses get?", "source": "gsm8k", "gear": 1}
+{"prompt": "Write a review of Brandon Sanderson's book, The Hero of Ages", "source": "dolly", "gear": 3}
+{"prompt": "What is a spatial network?", "source": "dolly", "gear": 2}
+{"prompt": "What are modifiers in English?", "source": "dolly", "gear": 2}
+{"prompt": "Write a function to add a dictionary to the tuple.", "source": "mbpp", "gear": 3}
+{"prompt": "Based on the reference text, what does the champion of the Masters Tournament receive?", "source": "dolly", "gear": 1}
+{"prompt": "What is a skiff?", "source": "dolly", "gear": 1}
+{"prompt": "There are 45 children in a classroom. One-third of them are girls. How many boys are in the classroom?", "source": "gsm8k", "gear": 1}
+{"prompt": "Write a function to find ln, m lobb number.", "source": "mbpp", "gear": 4}
+{"prompt": "What is a narcissist?", "source": "dolly", "gear": 2}
+{"prompt": "What is exchange rate?", "source": "dolly", "gear": 1}
+{"prompt": "What is one of Poseidon's many powers?", "source": "dolly", "gear": 1}
+{"prompt": "Mary is going on a business trip. It takes 10 minutes for her Uber to get to her house and 5 times longer to get to the airport. It takes 15 minutes to check her bag and three times as long to get through security. Then she has to wait for 20 minutes for her flight to start boarding and twice as long before the plane is ready to take off. How many hours will this process take total?", "source": "gsm8k", "gear": 1}
+{"prompt": "What is a good city to visit in Michigan in the summer?", "source": "dolly", "gear": 2}
+{"prompt": "What is a newspaper?", "source": "dolly", "gear": 1}
+{"prompt": "Write a python function to count the number of pairs whose sum is equal to ‘sum’.", "source": "mbpp", "gear": 3}
+{"prompt": "Write a function to exchange the position of every n-th value with (n+1)th value and (n+1)th value with n-th value in a given list.", "source": "mbpp", "gear": 4}
+{"prompt": "Write a story about a dark and scary night.", "source": "dolly", "gear": 3}
+{"prompt": "At what temperature does water boil?", "source": "dolly", "gear": 1}
+{"prompt": "Luis is driving 80 miles in 2 hours. How far will he go in 15 minutes?", "source": "gsm8k", "gear": 1}
+{"prompt": "Given a reference text about Lotus Mark IX, who designed the car?", "source": "dolly", "gear": 2}
+{"prompt": "James buys a weight vest for $250. He then buys 200 pounds of weight plates for $1.2 per pound. A 200-pound weight vest would cost $700 but there is a $100 discount. How much does he save with his vest?", "source": "gsm8k", "gear": 3}
+{"prompt": "Is Castle Island really an Island?", "source": "dolly", "gear": 2}
+{"prompt": "What are the primary causes of inflation?", "source": "dolly", "gear": 2}
+{"prompt": "Tell me whether these are types of pears or types of apples: Anjou, Bartlett, Bosc, Cosmic Crisp, Fuji, Granny Smith, Plymouth.", "source": "dolly", "gear": 2}
+{"prompt": "Is it better to run or to walk?", "source": "dolly", "gear": 2}
+{"prompt": "A mathematician is working on two projects. He has one week to write 518 maths questions for one project and 476 questions for another project. If he completes the same number of questions every day, how many should he aim to complete each day?", "source": "gsm8k", "gear": 1}
+{"prompt": "A garden store sells packages of pumpkin seeds for $2.50, tomato seeds for $1.50, and chili pepper seeds for $0.90. Harry is planning to plant three different types of vegetables on his farm. How much will Harry have to spend if he wants to buy three packets of pumpkin seeds, four packets of tomato seeds, and five packets of chili pepper seeds?", "source": "gsm8k", "gear": 1}
+{"prompt": "Extract all of the dates mentioned in this paragraph and list them using bullets in the format {Date} - {Description}", "source": "dolly", "gear": 2}
+{"prompt": "Mohammad has 80 bags of chips. One quarter of the bags of chips are Doritos. If Mohammad wants to split the bags of Doritos into 4 equal piles, how many bags of Doritos will be in each pile?", "source": "gsm8k", "gear": 1}
+{"prompt": "Write a function to find palindromes in a given list of strings using lambda function.", "source": "mbpp", "gear": 3}
+{"prompt": "Ben has four boxes with ten basketball cards in each box. His mother gave him five boxes with eight baseball cards. If he gives 58 cards to his classmates, how many cards does he has left?", "source": "gsm8k", "gear": 1}
+{"prompt": "What is an RFI (request for information)?", "source": "dolly", "gear": 1}
+{"prompt": "Why do people like to run very long distances like marathons?", "source": "dolly", "gear": 2}
+{"prompt": "Valerie needs to put stamps on the envelopes she is about to mail. She has thank you cards for each of her grandmother, uncle and aunt for the birthday presents they sent. She also has to pay the water bill and the electric bill separately. She wants to send three more mail-in rebates than she does bills and she has twice as many job applications as rebates to mail. How many stamps does she need if everything needs 1 stamp except the electric bill, which needs 2?", "source": "gsm8k", "gear": 4}
+{"prompt": "Why is ice hockey a good sport for women?", "source": "dolly", "gear": 2}
+{"prompt": "Write a python function to toggle bits of the number except the first and the last bit.", "source": "mbpp", "gear": 3}
+{"prompt": "Nicole collected 400 Pokemon cards. Cindy collected twice as many, and Rex collected half of Nicole and Cindy's combined total. If Rex divided his card equally among himself and his three younger siblings, how many cards does Rex have left?", "source": "gsm8k", "gear": 3}
+{"prompt": "Based on the above passage classify Bermudians based on their descent along with respective percentages in a bracket. Display the results in a comma separated format.", "source": "dolly", "gear": 2}
+{"prompt": "what is the meaning of life?", "source": "dolly", "gear": 1}
+{"prompt": "Why capri is so famous", "source": "dolly", "gear": 2}
+{"prompt": "Why is drinking coffee better before sport?", "source": "dolly", "gear": 2}
+{"prompt": "There are 50 more pens than notebooks on Wesley's school library shelf. If there are 30 notebooks on the shelf, how many notebooks and pens, does he have altogether?", "source": "gsm8k", "gear": 1}
+{"prompt": "What is COCOMO", "source": "dolly", "gear": 2}
+{"prompt": "What is Football?", "source": "dolly", "gear": 1}
+{"prompt": "A frog lays her eggs over a series of 4 days. The first day she lays 50 eggs. The second day, she doubles her production of eggs. The third day she lays 20 more than the second day, and the last day she doubles the first three days total. How many eggs did the frog lay over the span of the 4 days?", "source": "gsm8k", "gear": 3}
+{"prompt": "Tell a child a story about a dinosaur who plays baseball but has to take a break due to an injury", "source": "dolly", "gear": 3}
+{"prompt": "Write a python function to check whether every odd index contains odd numbers of a given list.", "source": "mbpp", "gear": 3}
+{"prompt": "The girl scouts earned $30 total from selling delicious cookies. They want to go to the pool. It will cost them $2.50 per person to go and 10 people are going. What is the amount left?", "source": "gsm8k", "gear": 1}
+{"prompt": "List me some details regarding carreer of lawyer Harry L. Shorstein", "source": "dolly", "gear": 2}
+{"prompt": "Will being fully autonomous change the future of car design ?", "source": "dolly", "gear": 3}
+{"prompt": "What spices are in shawarma seasoning?", "source": "dolly", "gear": 1}
+{"prompt": "Write a function to convert the given string of float type into tuple.", "source": "mbpp", "gear": 3}
+{"prompt": "Write a function to sort the given array by using heap sort.", "source": "mbpp", "gear": 4}
+{"prompt": "Given the reference text about a towboat, how does the boat work?", "source": "dolly", "gear": 2}
+{"prompt": "Write a function to find numbers divisible by m and n from a list of numbers using lambda function.", "source": "mbpp", "gear": 3}
+{"prompt": "When should I use Slack versus email versus a phone call?", "source": "dolly", "gear": 3}
+{"prompt": "The Early Bird Dinner offered dinner meals at half off the menu price if you eat between 2-4 pm. Curtis ordered the Salisbury Steak that costs $16.00 and Rob ordered the Chicken Fried Steak at $18.00. If they ate at 3 pm, what was the cost of their total bill?", "source": "gsm8k", "gear": 1}
+{"prompt": "Jon’s textbooks weigh three times as much as Brandon’s textbooks. Jon has four textbooks that weigh two, eight, five and nine pounds respectively. How much do Brandon’s textbooks weigh?", "source": "gsm8k", "gear": 1}
+{"prompt": "Name some famous rock bands from the 1960s", "source": "dolly", "gear": 1}
+{"prompt": "Every year 20 ducks from a flock are killed but another 30 are born. The original flock size is 100 ducks. After 5 years they join with another flock of 150 ducks. How many ducks are in the combined flock?", "source": "gsm8k", "gear": 1}
+{"prompt": "For the list given, classify which items are considered vegan, vegitarian and non vegetarian: milk, tofu, curd, chicken, mutton, bacon, clam, tomato, potato, onion, egg, beef, pork, mango, apple, salmon, soy milk, paneer", "source": "dolly", "gear": 2}
+{"prompt": "John is a door-to-door salesman. He visits 50 houses a day. 20% of them buy something from them. Of those that buy something half buy a $50 set of knives and the other half buy a $150 set of knives. How much does he sell a week when he works 5 days a week?", "source": "gsm8k", "gear": 1}
+{"prompt": "What is time series data?", "source": "dolly", "gear": 2}
+{"prompt": "What are the fanciest places to live in San Diego?", "source": "dolly", "gear": 2}
+{"prompt": "Write a function to find the maximum value in record list as tuple attribute in the given tuple list.", "source": "mbpp", "gear": 3}
+{"prompt": "What is prize money for Abel Prize ?", "source": "dolly", "gear": 1}
+{"prompt": "What are some qualities that make a good computer programmer?", "source": "dolly", "gear": 2}
+{"prompt": "write a short poem about gratitude to my sister friends who lead Obon dancing with me every year", "source": "dolly", "gear": 3}
+{"prompt": "Identify which car manufacturer is British or American: Lotus, Lincoln", "source": "dolly", "gear": 1}
+{"prompt": "Write a function to find the longest chain which can be formed from the given set of pairs.", "source": "mbpp", "gear": 4}
+{"prompt": "List some capital cities that begin with the letter S.", "source": "dolly", "gear": 1}
+{"prompt": "What is ice cream", "source": "dolly", "gear": 1}
+{"prompt": "Is there a relation between wavelength and frequency?", "source": "dolly", "gear": 2}
+{"prompt": "Jill bought 5 packs of red bouncy balls and 4 packs of yellow bouncy balls. Each package contained 18 bouncy balls. How many more red bouncy balls than yellow bouncy balls did Jill buy?", "source": "gsm8k", "gear": 1}
+{"prompt": "Which do you prefer, cakes or pies? Describe why you believe this way.", "source": "dolly", "gear": 2}
+{"prompt": "Classify each of the following cloud-based service as either AWS, Azure, or GCP: Redshift, Big Query, Lambda, Purview, Looker.", "source": "dolly", "gear": 2}
+{"prompt": "Write a plan for a road trip to ski resorts in California that are available on the Ikon pass, with stops at three different resorts. The plan should depart and end at San Francisco, include a budget, timeline, and short description of each resort.", "source": "dolly", "gear": 5}
+{"prompt": "Write a function to split a string at uppercase letters.", "source": "mbpp", "gear": 3}
+{"prompt": "Write a poem about a little neurodiverse boy with amazing gifts.", "source": "dolly", "gear": 3}
+{"prompt": "Please give me a summary of what AES-GCM is and what are its inputs and outputs.", "source": "dolly", "gear": 2}
+{"prompt": "Tell me whether these pokemon are electric or grass type: Pikachu, Bulbasaur, Zapdos, Voltorb, Oddish, Bellsprout", "source": "dolly", "gear": 1}
+{"prompt": "Janina spends $30 each day for rent and uses $12 worth of supplies daily to run her pancake stand. If she sells each pancake for $2, how many pancakes must Janina sell each day to cover her expenses?", "source": "gsm8k", "gear": 2}
+{"prompt": "Which is a bird or fish: Blackcap, Black swallower", "source": "dolly", "gear": 1}
+{"prompt": "From the passage mention the awards received by Sunil Manohar Gavaskar. Display the results in comma separated format.", "source": "dolly", "gear": 2}
+{"prompt": "How did Chiune Sugihara save lives?", "source": "dolly", "gear": 2}
+{"prompt": "How do I make a traditional Bolognese sauce?", "source": "dolly", "gear": 2}
+{"prompt": "What is the plot of the movie going wild", "source": "dolly", "gear": 2}
+{"prompt": "Which African country was founded by Americans", "source": "dolly", "gear": 1}
+{"prompt": "Can you please show some details regarding the comedy film Bjorck Family using given text as a reference", "source": "dolly", "gear": 2}
+{"prompt": "Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?", "source": "gsm8k", "gear": 2}
+{"prompt": "Please write a bulleted list of the key people involved in the construction of the Amsterdam Centraal station, and their role in the project.", "source": "dolly", "gear": 3}
+{"prompt": "Given this paragraph about Simon Bolivar, tell me when and where they were born, and what they are known for", "source": "dolly", "gear": 2}
+{"prompt": "Abel Prize is given in which field ?", "source": "dolly", "gear": 1}
+{"prompt": "The ratio of cows to bulls in a barn is 10:27. If there are 555 cattle on the farm, how many bulls are on the farm?", "source": "gsm8k", "gear": 2}
+{"prompt": "A pair of dogs are barking back and forth at each other from across the street. The poodle barks twice for every one time the terrier barks. The terrier’s owner hushes it every second time it barks. She has to say “hush” six times before the dogs stopped barking. How many times did the poodle bark?", "source": "gsm8k", "gear": 3}
+{"prompt": "A vendor bought apples at 2 for $3 and plans to sell them at 5 for $10. He also bought 3 oranges for $2.70 and plans to sell them at $1 each. How much is his profit if he sells 5 apples and 5 oranges?", "source": "gsm8k", "gear": 3}
+{"prompt": "Write a python function to count lower case letters in a given string.", "source": "mbpp", "gear": 1}
+{"prompt": "here is a blurb about byte pair encoding for encryption, what benefits does this concept have besides compression?", "source": "dolly", "gear": 2}
+{"prompt": "What are some important points about the Battle of the Bulge?", "source": "dolly", "gear": 2}
+{"prompt": "What is the scientific formula for table salt?", "source": "dolly", "gear": 1}
+{"prompt": "Beth is looking at her book collection and is wondering how many comic books she owns. She has 120 books and 65% are novels. 18 are graphic novels. The rest are comic books. What percentage of comic books does she own?", "source": "gsm8k", "gear": 3}
+{"prompt": "Who directed Terror Mountain, a American silent Western film?", "source": "dolly", "gear": 1}
+{"prompt": "Given this question about tourism, what country is the 6th most visited country?", "source": "dolly", "gear": 1}
+{"prompt": "Write a function to find the n-th power of individual elements in a list using lambda function.", "source": "mbpp", "gear": 3}
+{"prompt": "Tell me whether these are animals or bands names: Eagles, Camels, Penguins, The Turtles, The Beatles, The Animals, Arctic Monkeys, Spain, France, Gorillas, Gorillaz, Crazy Horse, Lamb Of God, Beluga sturgeon", "source": "dolly", "gear": 2}
+{"prompt": "What properties are available to buy on a UK Monopoly board, not including stations and utilities?", "source": "dolly", "gear": 2}
+{"prompt": "Mrs. Lopez and her family are going to the movie theatre. Adult tickets are $11. Children’s tickets (ages 3-12) are $8. Senior citizen’s tickets (ages 60+) are $9. Mrs. Lopez needs to buy movie tickets for her husband, herself, her parents (ages 72 and 75), and her three children (ages 7, 10, 14). How much money does she need to buy everyone’s tickets?", "source": "gsm8k", "gear": 3}
+{"prompt": "Axel bought an aquarium that was marked down 50% from an original price of $120. But he also paid additional sales tax equal to 5% of the reduced price. What was the total cost of the aquarium?", "source": "gsm8k", "gear": 3}
+{"prompt": "How long is it before Kayla can reach the minimum age of driving of her state, which is 18, if she is currently half the age of her sister Kimiko who is 26 years old?", "source": "gsm8k", "gear": 2}
+{"prompt": "Give me a list of the dog breeds", "source": "dolly", "gear": 2}
+{"prompt": "Stephanie is checking her household budget, and needs to calculate how much she has left to pay for her bills. Her electricity bill costs $60, and this is paid in full. Her gas bill was $40, and she has already paid three-quarters of this. She makes another payment of $5 towards her gas bill while checking her budget. Her water bill is $40, which she has paid half of, and her internet bill is $25, which she has made 4 payments of $5 towards. Overall, how many dollars does Stephanie still need to pay to finish paying her bills?", "source": "gsm8k", "gear": 3}
+{"prompt": "Kaiden is collecting cans of soup for the local soup kitchen. He collects 158 cans during his first week and 259 during the second week. If his goal is to collect 500 cans how many more cans of soup does he need to collect?", "source": "gsm8k", "gear": 2}
+{"prompt": "How should I think about ways to arrange a desk in a home office", "source": "dolly", "gear": 2}
+{"prompt": "Write a function to calculate the geometric sum of n-1.", "source": "mbpp", "gear": 3}
+{"prompt": "describe experience of child fighting with autism", "source": "dolly", "gear": 3}
+{"prompt": "Identify which car manufacturer is Japanese or American: Isuzu, Cadillac", "source": "dolly", "gear": 1}
+{"prompt": "When Jane visited Iran, she visited 6 more than twice as many rehabilitation centers as Han. Han visited 2 less than twice as many rehabilitation centers as Jude did. Jude visited half fewer rehabilitation centers as Lisa did. If Lisa visited 6 rehabilitation centers, how many rehabilitation centers did they all visit assuming they are all different?", "source": "gsm8k", "gear": 3}
+{"prompt": "Write a function to check whether the given month number contains 28 days or not.", "source": "mbpp", "gear": 3}
+{"prompt": "Michael has a lot of matchsticks at home and decides to use them to make miniature models. As he is about to start crafting, he has second thoughts and decides to only use half of his pile of matchsticks. He creates 30 matchsticks houses. If he has now used all of the matchsticks he intended to and each matchstick house uses 10 matchsticks, how many matchsticks did Michael have originally?", "source": "gsm8k", "gear": 3}
+{"prompt": "What would the fantasy city look like", "source": "dolly", "gear": 2}
+{"prompt": "Remove vowels from this text:", "source": "dolly", "gear": 1}
+{"prompt": "What are Salesforce's Inc current state and challenges?", "source": "dolly", "gear": 2}
+{"prompt": "Tim takes his 3 children trick or treating. They are out for 4 hours. Each hour they visited 5 houses. Each house gives 3 treats per kid. How many treats do his children get in total?", "source": "gsm8k", "gear": 3}
+{"prompt": "Write a function to check for a number at the end of a string.", "source": "mbpp", "gear": 3}
+{"prompt": "Classify the following celebrities as sports or acting personalities or both : Arnold Schwarzenegger, Brad Pitt, Kevin Durant, Shohei Ohtani, Harrison Ford, Dwayne Johnson, Jason Statham, Stephen Curry, Robin Williams, Scarlett Johansson, Tom Brady, Patrick Mahomes", "source": "dolly", "gear": 2}
+{"prompt": "Christina and her friend are driving across the state. When Christina is driving the speed limit is 30 miles per hour. When her friend is driving, the speed limit is 40 miles per hour. The drive is 210 miles total. If her friend drives for 3 hours and both drive at the speed limit, how many minutes will Christina drive?", "source": "gsm8k", "gear": 3}
+{"prompt": "Identify which instrument is string or woodwind: Gravikord, Heckelphone", "source": "dolly", "gear": 1}
+{"prompt": "Tell me whether the following politicians are associated with California or Florida: Kamala Harris, Nancy Pelosi, Ron DeSantis, Marco Rubio, Charlie Christ, Diane Feinstein, Gavin Newsom", "source": "dolly", "gear": 2}
+{"prompt": "From the paragraph about the painting, \"The Little Street\", tell me the painting's significance with reference to the Dutch Golden Age in that period.", "source": "dolly", "gear": 4}
+{"prompt": "What does the idiom burning your bridges mean?", "source": "dolly", "gear": 1}
+{"prompt": "Write a function to remove consecutive duplicates of a given list.", "source": "mbpp", "gear": 3}
+{"prompt": "John scores 2 shots worth 2 points and 1 shot worth 3 points every 4 minutes. He plays for 2 periods. Each period is 12 minutes. How many points does he score?", "source": "gsm8k", "gear": 3}
+{"prompt": "A football club has a balance of $100 million. The club then sells 2 of its players at $10 million each, and buys 4 more at $15 million each. How much money is left in the club register in millions of dollars?", "source": "gsm8k", "gear": 3}
+{"prompt": "Write a python function to find the sum of fifth power of n natural numbers.", "source": "mbpp", "gear": 3}
+{"prompt": "Extract all the names of people from this article about Robert Ball.", "source": "dolly", "gear": 2}
+{"prompt": "Why are gaming conferences fun for everyone?", "source": "dolly", "gear": 2}
+{"prompt": "You have been placed in the position of supporting the 2010 Supreme Court decision in Citizens United v. Federal Election Commission. Please develop your position into a one-page position paper (12-point font, single spaced).", "source": "dolly", "gear": 5}
