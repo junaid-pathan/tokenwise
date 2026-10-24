@@ -87,20 +87,31 @@ updates too (the HUD shows the level as a word as well).
   independent of event rate.
 - Geometries are disposed on unmount (`Ground` and `Sparks` cleanup effects).
 
-## Hooks for B9 (polish & demo — do NOT build here)
+## Demo controls (PR B9)
 
-B9 adds the camera push-in on alert, demo keys (R/A/1-3/X) and "Simulated"
-labels. To keep its surface small, B7 leaves these seams:
+Press these keys in the Grid Room window (ignored while typing in a text field,
+on key repeat, and with Ctrl/Alt/Cmd held). A short toast confirms each one.
 
-- **Camera**: `IsoCamera` positions an `OrthographicCamera` at
-  `(14, 16, 16)` looking at the origin with a `frustum = 16`. B9 can animate the
-  camera position and/or shrink the frustum for a push-in; the state is centred
-  on the origin so a zoom toward `(0,0,0)` frames the map. Prefer animating a
-  ref to the camera (e.g. via `useThree().camera`) rather than React state.
-- **Towers**: glow/height already respond to `power.sample`; B9's "alert" push
-  can reuse the same `wattsRef`-style ref pattern, or read `grid.state` level.
-- **"Simulated" labels**: add them as additional `drei` `Text`/`Html` overlays;
-  the tower labels show the pattern (no external font — `Text` uses its built-in
-  font so the build never fails on a font download).
-- **Demo keys**: attach a `window` keydown listener in a sibling component; the
-  Scene's effects are all ref/queue-driven, so replays just re-feed events.
+| Key | Does | Engine call |
+| --- | --- | --- |
+| `R` | Replay June 24, 2025 at the current speed | `POST /v1/demo/replay` |
+| `1` / `2` / `3` | Replay at slow (24 h in 6 min) / normal (3 min) / fast (90 s) | `POST /v1/demo/replay` |
+| `A` | Toggle a Grid Alert: red, or back to green if already red | `POST /v1/demo/alert` |
+| `X` | Reset: grid to green, sparks cleared, camera and speed back to default | `POST /v1/demo/alert {green}` |
+
+`X` cannot stop a replay that is already running. There is no stop endpoint, and
+adding one needs a joint `contract:` PR. Press `R` to restart the replay instead.
+
+The key logic is pure and unit-tested in `demo.ts` / `demo.test.ts`.
+
+## Polish (PR B9)
+
+- **Camera push-in**: while the grid is red, the orthographic frustum eases from
+  16 to 11 (zooming toward the state centre) and eases back out after. Under
+  `prefers-reduced-motion` it snaps instead of animating.
+- **Tower glow**: each tower flashes when a spark lands on it, decaying over
+  about a quarter second, on top of the existing watts-driven glow.
+- **"Simulated" labels**: bottom-right tags appear whenever the current event
+  window contains simulated crowd prompts, replayed grid load, or estimated
+  power (`simulatedFlag` in `demo.ts`). Live data shows no tag. A key legend
+  sits under them.
