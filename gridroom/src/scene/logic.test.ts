@@ -188,3 +188,14 @@ test("power.sample yields a power effect", () => {
   const eff = p.process(ev({ type: "power.sample", id: "w1", watts: 72, device: "T4", source: "estimate" }));
   assert.equal(asPower(eff).watts, 72);
 });
+
+test("duplicate route.decided for same prompt fires one spark", () => {
+  // Two distinct events (different ids) but the SAME prompt_id — e.g. the
+  // harness and the real Coordinator both routing — must spark only once.
+  const p = new EventProcessor(centroids);
+  p.process(ev({ type: "prompt.received", id: "a", prompt_id: "dup1", source: "crowd", chars: 5, town: "Boston" }));
+  const first = p.process(ev({ type: "route.decided", id: "r1", prompt_id: "dup1", gear_needed: 2, gear_used: 2, model: "m", deferred: false, protected: false, reason: "" }));
+  const second = p.process(ev({ type: "route.decided", id: "r2", prompt_id: "dup1", gear_needed: 2, gear_used: 2, model: "m", deferred: false, protected: false, reason: "" }));
+  assert.equal(asSpark(first).town, "Boston");
+  assert.equal(second, null);
+});

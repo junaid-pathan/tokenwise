@@ -54,6 +54,10 @@ export class EventProcessor {
   private seenOrder: string[] = [];
   private promptTown = new Map<string, string>();
   private townOrder: string[] = [];
+  // prompt_ids that have already fired a spark, so a duplicate route.decided
+  // (e.g. harness + real Coordinator both routing) never draws two sparks.
+  private routed = new Set<string>();
+  private routedOrder: string[] = [];
 
   constructor(
     private centroids: Record<string, [number, number]>,
@@ -85,6 +89,19 @@ export class EventProcessor {
     return this.centroids[town] ?? null;
   }
 
+  // Returns true the FIRST time a prompt_id is routed, false afterwards, so a
+  // duplicate route.decided for the same prompt never fires a second spark.
+  private markRouted(promptId: string): boolean {
+    if (this.routed.has(promptId)) return false;
+    this.routed.add(promptId);
+    this.routedOrder.push(promptId);
+    if (this.routedOrder.length > MAX_TOWN_MAP) {
+      const old = this.routedOrder.shift()!;
+      this.routed.delete(old);
+    }
+    return true;
+  }
+
   /**
    * Process one event exactly once (dedup by id). Returns the effect it
    * produces, or null if the event is a no-op / already seen / deferred.
@@ -101,6 +118,7 @@ export class EventProcessor {
       }
       case "route.decided": {
         if (ev.deferred) return null; // queued, not flown
+        if (!this.markRouted(ev.prompt_id)) return null; // dup route for prompt
         const town = this.promptTown.get(ev.prompt_id) ?? this.defaultTown;
         const coords = this.resolveCoords(town) ?? this.resolveCoords(this.defaultTown);
         if (!coords) return null;

@@ -42,6 +42,12 @@ SHIFT_P = {"green": 0.0, "yellow": 0.1, "red": 0.7}
 
 RATE = float(os.environ.get("SYNTH_RATE", "12"))
 PERIOD = float(os.environ.get("SYNTH_LEVEL_PERIOD", "8"))
+# The real engine app (engine.app.app) already runs Aru's Triage + Coordinator,
+# which publish triage.decided / route.decided for every prompt.received. So by
+# default the harness emits ONLY prompt.received and lets the real agents route
+# it — otherwise every spark doubles. Set SYNTH_SELF_ROUTE=1 to have the harness
+# publish its own route.decided instead (e.g. if the real agents are disabled).
+SELF_ROUTE = os.environ.get("SYNTH_SELF_ROUTE", "0") == "1"
 
 
 async def _prompts(state: dict) -> None:
@@ -56,11 +62,12 @@ async def _prompts(state: dict) -> None:
             "type": "prompt.received", "prompt_id": pid, "source": "crowd",
             "chars": random.randint(10, 400), "town": random.choice(TOWNS),
         })
-        await bus.publish({
-            "type": "route.decided", "prompt_id": pid, "gear_needed": needed,
-            "gear_used": used, "model": MODELS[used], "deferred": False,
-            "protected": False, "reason": "synthetic test event",
-        })
+        if SELF_ROUTE:
+            await bus.publish({
+                "type": "route.decided", "prompt_id": pid, "gear_needed": needed,
+                "gear_used": used, "model": MODELS[used], "deferred": False,
+                "protected": False, "reason": "synthetic test event",
+            })
 
 
 async def _grid(state: dict) -> None:
