@@ -59,10 +59,12 @@ function Ground({ levelRef }: { levelRef: React.MutableRefObject<GridLevel> }) {
   useFrame(() => {
     const mat = matRef.current;
     if (!mat) return;
-    // Keep tiles dark and readable: tint is a dim version of the level colour.
+    // Keep tiles dark and readable, but clearly tinted: material.color is the
+    // level colour scaled down (not multiplied by a grey vertex colour, which
+    // used to wash red into olive). Enough punch to read green/yellow/red.
     const [r, g, b] = hexToRgb(levelColor(levelRef.current));
-    const target = new THREE.Color(r, g, b).multiplyScalar(0.32).addScalar(0.03);
-    current.current.lerp(target, 0.06);
+    const target = new THREE.Color(r, g, b).multiplyScalar(0.45).addScalar(0.02);
+    current.current.lerp(target, 0.08);
     mat.color.copy(current.current);
   });
 

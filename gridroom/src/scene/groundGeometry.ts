@@ -69,10 +69,11 @@ export function buildGroundGeometry(data: TownCollection): THREE.BufferGeometry 
   merged.rotateX(-Math.PI / 2);
   merged.computeVertexNormals();
 
-  // Add a per-vertex colour attribute (all vertices start mid-grey; the Scene
-  // lerps this toward the grid-level tint each frame via the material colour).
+  // Add a per-vertex colour attribute (neutral white so the material colour
+  // the Scene lerps toward is NOT halved — a 0.5 grey here multiplied the red
+  // tint down into a dull olive). The Scene drives the tint via material.color.
   const count = merged.getAttribute("position").count;
-  const colors = new Float32Array(count * 3).fill(0.5);
+  const colors = new Float32Array(count * 3).fill(1.0);
   merged.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   return merged;
 }
