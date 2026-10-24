@@ -7,7 +7,8 @@ python-dotenv==1.0.1
 websockets==14.1
 
 # B (bedrock, replay, training data)
-boto3==1.35.76
+# 1.39+ is required to read Bedrock API keys (AWS_BEARER_TOKEN_BEDROCK); verified on 1.40.76
+boto3==1.40.76
 
 # A (training / eval) — CPU only
 scikit-learn==1.5.2
