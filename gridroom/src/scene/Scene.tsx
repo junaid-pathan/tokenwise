@@ -6,7 +6,7 @@
 // each event exactly once (dedup by id in EventProcessor) and do all per-event
 // work in refs / useFrame, never in React render, so a fast stream never
 // rebuilds the scene.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
@@ -19,12 +19,26 @@ import { lonLatToXZ } from "./projection";
 import { TOWERS, nearestTowerIndex } from "./towers";
 import { hexToRgb, levelColor } from "./colors";
 import { arcControlPoint, bezierPoint, SPARK_DURATION, type Vec3 } from "./arc";
+import {
+  ENGINE,
+  DEFAULT_SPEED,
+  actionForKey,
+  describe,
+  isTypingTarget,
+  requestFor,
+  simulatedFlag,
+  simulatedLabels,
+} from "./demo";
 import townData from "./data/ma-towns.json";
 import centroidsJson from "./data/town-centroids.json";
 
 const CENTROIDS = centroidsJson as unknown as Record<string, [number, number]>;
 
 const POOL = 512; // spark instances (ring buffer)
+const FRUSTUM = 16; // resting orthographic frustum height
+const FRUSTUM_ALERT = 11; // pushed-in frustum while the grid is red
+
+type SparkItem = { start: Vec3; end: Vec3; color: string; tower: number };
 const prefersReducedMotion =
   typeof window !== "undefined" &&
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -40,8 +54,6 @@ const LABEL_PLACEMENT: Record<
   Westfield: { pos: [-0.9, 1.7, 0.5], anchorX: "right" },
   Lowell: { pos: [0, 2.2, 0], anchorX: "center" },
 };
-  typeof window !== "undefined" &&
-  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 // ---------------------------------------------------------------------------
 // Ground: one merged geometry, vertex colours lerp toward the level tint.
@@ -81,21 +93,31 @@ function Ground({ levelRef }: { levelRef: React.MutableRefObject<GridLevel> }) {
 }
 
 // ---------------------------------------------------------------------------
-// Towers: three glowing prisms with labels; glow/height follow live watts.
+// Towers: three glowing prisms with labels; glow/height follow live watts,
+// and each tower flashes briefly when a spark lands on it.
 // ---------------------------------------------------------------------------
-function Towers({ wattsRef }: { wattsRef: React.MutableRefObject<number> }) {
+function Towers({
+  wattsRef,
+  flashRef,
+}: {
+  wattsRef: React.MutableRefObject<number>;
+  flashRef: React.MutableRefObject<number[]>;
+}) {
   const groupRefs = useRef<(THREE.Mesh | null)[]>([]);
   const matRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const smoothed = useRef(55); // idle glow baseline (W)
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     // Smooth the watts (exponential). 40..90 W -> normalised 0..1.
     smoothed.current += (wattsRef.current - smoothed.current) * 0.05;
     const norm = THREE.MathUtils.clamp((smoothed.current - 35) / 60, 0, 1);
+    const decay = Math.exp(-4 * delta);
     for (let i = 0; i < TOWERS.length; i++) {
       const mesh = groupRefs.current[i];
       const mat = matRefs.current[i];
-      if (mat) mat.emissiveIntensity = 0.6 + norm * 2.2;
+      const flash = flashRef.current[i] ?? 0;
+      flashRef.current[i] = flash < 0.01 ? 0 : flash * decay;
+      if (mat) mat.emissiveIntensity = 0.6 + norm * 2.2 + flash * 2.5;
       if (mesh && !prefersReducedMotion) {
         // Height pulse (scale Y). Disabled under reduced motion.
         const h = 1 + norm * 0.9;
@@ -174,14 +196,18 @@ interface SparkState {
   end: Vec3;
   color: THREE.Color;
   t: number; // 0..1
+  tower: number; // index into TOWERS, flashed on landing
 }
 
 function Sparks({
   sparkQueueRef,
+  flashRef,
+  clearRef,
 }: {
-  sparkQueueRef: React.MutableRefObject<
-    { start: Vec3; end: Vec3; color: string }[]
-  >;
+  sparkQueueRef: React.MutableRefObject<SparkItem[]>;
+  flashRef: React.MutableRefObject<number[]>;
+  // Set true by the demo reset (X); the next frame drops every spark.
+  clearRef: React.MutableRefObject<boolean>;
 }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -194,6 +220,7 @@ function Sparks({
         end: [0, 0, 0] as Vec3,
         color: new THREE.Color(),
         t: 0,
+        tower: 0,
       })),
     []
   );
@@ -221,6 +248,21 @@ function Sparks({
     const mesh = meshRef.current;
     if (!mesh) return;
 
+    let forceUpdate = false;
+    if (clearRef.current) {
+      clearRef.current = false;
+      sparkQueueRef.current.length = 0;
+      for (let i = 0; i < POOL; i++) {
+        if (!states[i].active) continue;
+        states[i].active = false;
+        dummy.position.set(0, -999, 0);
+        dummy.scale.setScalar(0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      }
+      forceUpdate = true;
+    }
+
     // Drain the queue into free slots (ring buffer by cursor).
     const q = sparkQueueRef.current;
     while (q.length > 0) {
@@ -233,6 +275,7 @@ function Sparks({
       slot.end = item.end;
       slot.ctrl = arcControlPoint(item.start, item.end);
       slot.color.set(item.color);
+      slot.tower = item.tower;
       // Reduced motion: drop the spark straight at the tower, brief marker.
       slot.t = prefersReducedMotion ? 0.92 : 0;
       mesh.setColorAt(idx, slot.color);
@@ -246,6 +289,7 @@ function Sparks({
       s.t += delta / SPARK_DURATION;
       if (s.t >= 1) {
         s.active = false;
+        flashRef.current[s.tower] = 1; // landed: the tower glows briefly
         dummy.position.set(0, -999, 0);
         dummy.scale.setScalar(0);
       } else {
@@ -258,7 +302,7 @@ function Sparks({
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     }
-    if (anyActive) {
+    if (anyActive || forceUpdate) {
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
@@ -276,24 +320,56 @@ function Sparks({
 }
 
 // ---------------------------------------------------------------------------
-// Camera: orthographic at an isometric angle, real depth so B9 can push in.
+// Camera: orthographic at an isometric angle. Pushes in (smaller frustum)
+// while the grid is red and eases back out after; snaps under reduced motion.
 // ---------------------------------------------------------------------------
-function IsoCamera() {
+function CameraRig({
+  levelRef,
+  resetRef,
+}: {
+  levelRef: React.MutableRefObject<GridLevel>;
+  // Set true by the demo reset (X); the camera jumps back to rest.
+  resetRef: React.MutableRefObject<boolean>;
+}) {
   const { camera, size } = useThree();
+  const frustum = useRef(FRUSTUM);
+  const applied = useRef(-1); // frustum last written to the projection
+
+  const apply = (cam: THREE.OrthographicCamera, f: number) => {
+    const aspect = size.width / size.height;
+    cam.left = (-f * aspect) / 2;
+    cam.right = (f * aspect) / 2;
+    cam.top = f / 2;
+    cam.bottom = -f / 2;
+    cam.updateProjectionMatrix();
+    applied.current = f;
+  };
+
   useEffect(() => {
     const cam = camera as THREE.OrthographicCamera;
-    const aspect = size.width / size.height;
-    const frustum = 16;
-    cam.left = (-frustum * aspect) / 2;
-    cam.right = (frustum * aspect) / 2;
-    cam.top = frustum / 2;
-    cam.bottom = -frustum / 2;
     cam.near = 0.1;
     cam.far = 100;
     cam.position.set(14, 16, 16);
     cam.lookAt(0, 0, 0);
-    cam.updateProjectionMatrix();
+    apply(cam, frustum.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camera, size]);
+
+  useFrame((_, delta) => {
+    const cam = camera as THREE.OrthographicCamera;
+    if (resetRef.current) {
+      resetRef.current = false;
+      frustum.current = FRUSTUM;
+    }
+    const target = levelRef.current === "red" ? FRUSTUM_ALERT : FRUSTUM;
+    if (prefersReducedMotion) {
+      frustum.current = target;
+    } else {
+      const f = frustum.current + (target - frustum.current) * (1 - Math.exp(-2.5 * delta));
+      frustum.current = Math.abs(f - target) < 0.005 ? target : f;
+    }
+    if (frustum.current !== applied.current) apply(cam, frustum.current);
+  });
   return null;
 }
 
@@ -307,12 +383,14 @@ function EventEngine({
   wattsRef,
   sparkQueueRef,
   onLevel,
+  onSimulated,
 }: {
   events: DownshiftEvent[];
   levelRef: React.MutableRefObject<GridLevel>;
   wattsRef: React.MutableRefObject<number>;
-  sparkQueueRef: React.MutableRefObject<{ start: Vec3; end: Vec3; color: string }[]>;
+  sparkQueueRef: React.MutableRefObject<SparkItem[]>;
   onLevel: (lvl: GridLevel) => void;
+  onSimulated: (flags: number) => void;
 }) {
   const processorRef = useRef<EventProcessor | null>(null);
   if (!processorRef.current) {
@@ -321,6 +399,11 @@ function EventEngine({
 
   useEffect(() => {
     const proc = processorRef.current!;
+    // Which non-live sources are in the current window (for the labels).
+    // React skips the update when the number is unchanged.
+    let flags = 0;
+    for (const ev of events) flags |= simulatedFlag(ev);
+    onSimulated(flags);
     for (const ev of events) {
       const eff: Effect | null = proc.process(ev);
       if (!eff) continue;
@@ -330,16 +413,17 @@ function EventEngine({
       } else if (eff.kind === "power") {
         wattsRef.current = eff.watts;
       } else if (eff.kind === "spark") {
+        const tower = nearestTowerIndex(eff.lon, eff.lat);
         const start = toGround(eff.lon, eff.lat);
-        const end = nearestTowerTop(eff.lon, eff.lat);
-        sparkQueueRef.current.push({ start, end, color: eff.color });
+        const end = towerTop(tower);
+        sparkQueueRef.current.push({ start, end, color: eff.color, tower });
         // Keep the queue bounded in case of a burst.
         if (sparkQueueRef.current.length > POOL) {
           sparkQueueRef.current.splice(0, sparkQueueRef.current.length - POOL);
         }
       }
     }
-  }, [events, levelRef, wattsRef, sparkQueueRef, onLevel]);
+  }, [events, levelRef, wattsRef, sparkQueueRef, onLevel, onSimulated]);
 
   return null;
 }
@@ -348,11 +432,74 @@ function toGround(lon: number, lat: number): Vec3 {
   const [x, z] = lonLatToXZ(lon, lat);
   return [x, 0.2, z];
 }
-function nearestTowerTop(lon: number, lat: number): Vec3 {
-  const t = TOWERS[nearestTowerIndex(lon, lat)];
+function towerTop(index: number): Vec3 {
+  const t = TOWERS[index];
   const [x, z] = lonLatToXZ(t.lon, t.lat);
   return [x, 1.6, z];
 }
+
+// ---------------------------------------------------------------------------
+// Demo keys (B9): R replay, 1-3 speed, A alert, X reset. A plain window
+// listener; it ignores key repeats, modifier combos and text fields.
+// ---------------------------------------------------------------------------
+function useDemoKeys({
+  levelRef,
+  clearRef,
+  cameraResetRef,
+  flashRef,
+  toast,
+}: {
+  levelRef: React.MutableRefObject<GridLevel>;
+  clearRef: React.MutableRefObject<boolean>;
+  cameraResetRef: React.MutableRefObject<boolean>;
+  flashRef: React.MutableRefObject<number[]>;
+  toast: (msg: string) => void;
+}) {
+  const speedRef = useRef(DEFAULT_SPEED);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (isTypingTarget(e.target as HTMLElement | null)) return;
+      const action = actionForKey(e.key, {
+        speed: speedRef.current,
+        level: levelRef.current,
+      });
+      if (!action) return;
+      e.preventDefault();
+
+      if (action.kind === "replay") speedRef.current = action.speed;
+      if (action.kind === "reset") {
+        speedRef.current = DEFAULT_SPEED;
+        clearRef.current = true;
+        cameraResetRef.current = true;
+        flashRef.current = TOWERS.map(() => 0);
+      }
+
+      const { path, body } = requestFor(action);
+      fetch(`${ENGINE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+        .then((res) => toast(res.ok ? describe(action) : `Engine error ${res.status}`))
+        .catch(() => toast("Engine offline"));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [levelRef, clearRef, cameraResetRef, flashRef, toast]);
+}
+
+// Shared look for the DOM overlays: dark glass matching the scene background.
+const overlayChip: React.CSSProperties = {
+  background: "rgba(6, 9, 13, 0.78)",
+  border: "1px solid rgba(219, 231, 255, 0.22)",
+  borderRadius: 6,
+  color: "#dbe7ff",
+  font: "600 11px ui-monospace, Consolas, monospace",
+  letterSpacing: 0.4,
+  padding: "4px 8px",
+};
 
 // ---------------------------------------------------------------------------
 // Scene (default export) — the fixed contract.
@@ -360,66 +507,124 @@ function nearestTowerTop(lon: number, lat: number): Vec3 {
 export default function Scene({ events }: { events: DownshiftEvent[] }) {
   const levelRef = useRef<GridLevel>("green");
   const wattsRef = useRef<number>(0);
-  const sparkQueueRef = useRef<{ start: Vec3; end: Vec3; color: string }[]>([]);
-  // The ONLY React state here changes at human speed (level words), never per
-  // frame or per high-rate event — it drives the aria-label + live region.
+  const sparkQueueRef = useRef<SparkItem[]>([]);
+  const flashRef = useRef<number[]>(TOWERS.map(() => 0));
+  const clearRef = useRef(false);
+  const cameraResetRef = useRef(false);
+  // React state here changes at human speed only (level word, simulated
+  // flags, toast), never per frame or per high-rate event.
   const [level, setLevel] = useState<GridLevel>("green");
+  const [simFlags, setSimFlags] = useState(0);
+  const [toastMsg, setToastMsg] = useState("");
+  const toastTimer = useRef<number | undefined>(undefined);
+
+  const toast = useCallback((msg: string) => {
+    setToastMsg(msg);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToastMsg(""), 2500);
+  }, []);
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  useDemoKeys({ levelRef, clearRef, cameraResetRef, flashRef, toast });
+
+  const simLabels = simulatedLabels(simFlags);
 
   return (
-    <div
-      style={{ position: "absolute", inset: 0 }}
-      role="img"
-      aria-label={`Massachusetts grid room, grid level ${level}`}
-    >
-      {/* Visually-hidden live region announces level changes (colour is never
-          the only signal). */}
+    <div style={{ position: "absolute", inset: 0 }}>
       <div
+        style={{ position: "absolute", inset: 0 }}
+        role="img"
+        aria-label={`Massachusetts grid room, grid level ${level}`}
+      >
+        {/* Visually-hidden live region announces level changes (colour is never
+            the only signal). */}
+        <div
+          aria-live="polite"
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {`Grid level ${level}`}
+        </div>
+  
+        <Canvas
+          orthographic
+          dpr={[1, 1.5]}
+          gl={{ antialias: true, powerPreference: "high-performance" }}
+          style={{ position: "absolute", inset: 0 }}
+        >
+          <color attach="background" args={["#06090d"]} />
+          <CameraRig levelRef={levelRef} resetRef={cameraResetRef} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[12, 18, 8]} intensity={1.1} castShadow />
+          <hemisphereLight args={["#2a3b5a", "#05070a", 0.5]} />
+  
+          <Ground levelRef={levelRef} />
+          <Towers wattsRef={wattsRef} flashRef={flashRef} />
+          <Sparks sparkQueueRef={sparkQueueRef} flashRef={flashRef} clearRef={clearRef} />
+  
+          <EventEngine
+            events={events}
+            levelRef={levelRef}
+            wattsRef={wattsRef}
+            sparkQueueRef={sparkQueueRef}
+            onLevel={setLevel}
+            onSimulated={setSimFlags}
+          />
+  
+          <EffectComposer>
+            <Bloom
+              intensity={0.6}
+              luminanceThreshold={0.6}
+              luminanceSmoothing={0.2}
+              mipmapBlur
+            />
+          </EffectComposer>
+        </Canvas>
+      </div>
+
+      {/* Demo feedback toast, top-centre (the HUD owns the top-left). */}
+      <div
+        role="status"
         aria-live="polite"
         style={{
           position: "absolute",
-          width: 1,
-          height: 1,
-          overflow: "hidden",
-          clip: "rect(0 0 0 0)",
-          whiteSpace: "nowrap",
+          top: 16,
+          left: "50%",
+          transform: "translateX(-50%)",
+          pointerEvents: "none",
         }}
       >
-        {`Grid level ${level}`}
+        {toastMsg && <div style={{ ...overlayChip, fontSize: 12, padding: "6px 12px" }}>{toastMsg}</div>}
       </div>
 
-      <Canvas
-        orthographic
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
-        style={{ position: "absolute", inset: 0 }}
+      {/* "Simulated" labels and the demo-key legend, bottom-right. */}
+      <div
+        style={{
+          position: "absolute",
+          right: 16,
+          bottom: 16,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          gap: 6,
+          pointerEvents: "none",
+        }}
       >
-        <color attach="background" args={["#06090d"]} />
-        <IsoCamera />
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[12, 18, 8]} intensity={1.1} castShadow />
-        <hemisphereLight args={["#2a3b5a", "#05070a", 0.5]} />
-
-        <Ground levelRef={levelRef} />
-        <Towers wattsRef={wattsRef} />
-        <Sparks sparkQueueRef={sparkQueueRef} />
-
-        <EventEngine
-          events={events}
-          levelRef={levelRef}
-          wattsRef={wattsRef}
-          sparkQueueRef={sparkQueueRef}
-          onLevel={setLevel}
-        />
-
-        <EffectComposer>
-          <Bloom
-            intensity={0.6}
-            luminanceThreshold={0.6}
-            luminanceSmoothing={0.2}
-            mipmapBlur
-          />
-        </EffectComposer>
-      </Canvas>
+        {simLabels.map((label) => (
+          <span key={label} style={{ ...overlayChip, textTransform: "uppercase" }}>
+            {label}
+          </span>
+        ))}
+        <span style={{ ...overlayChip, color: "#9fb0cc", fontWeight: 500 }}>
+          R replay · A alert · 1-3 speed · X reset
+        </span>
+      </div>
     </div>
   );
 }
