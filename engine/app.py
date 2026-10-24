@@ -21,7 +21,12 @@ app = FastAPI(title="Downshift engine", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://chatgpt.com",
+        "https://chat.openai.com",
+        "https://claude.ai",
+    ],
     allow_origin_regex=r"chrome-extension://.*",
     allow_methods=["*"],
     allow_headers=["*"],

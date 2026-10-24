@@ -144,11 +144,29 @@ def classify_from_event(ev: dict) -> tuple[int, float, str]:
     return 5, 0.55, f"{chars} chars, very long"
 
 
+# Text-based triage results for prompts whose text the API already has, keyed by
+# prompt_id. prompt.received carries only `chars`, so /v1/answer leaves its real
+# classification here and on_prompt uses it instead of the length heuristic.
+HINTS: dict[str, tuple[int, float, str]] = {}
+
+
+def classify_text(prompt: str) -> tuple[int, float, str]:
+    """Best available text classification: trained model, else the rules."""
+    try:
+        from training.model.classifier import predict
+
+        gear, conf, source = predict(prompt)
+        return gear, conf, f"classifier ({source})"
+    except Exception:
+        return classify(prompt)
+
+
 def register(bus, app):
     """Wire the triage agent into the engine: bus subscription + HTTP route."""
 
     async def on_prompt(ev: dict) -> None:
-        gear, conf, reason = classify_from_event(ev)
+        hint = HINTS.pop(ev.get("prompt_id"), None)
+        gear, conf, reason = hint or classify_from_event(ev)
         await bus.publish(
             {
                 "type": "triage.decided",
@@ -166,13 +184,7 @@ def register(bus, app):
         prompt = body.get("prompt", "")
         # Prefer the trained classifier (A4-full); it falls back to these rules
         # internally if the model or its deps are unavailable.
-        try:
-            from training.model.classifier import predict
-
-            gear, conf, source = predict(prompt)
-            reason = f"classifier ({source})"
-        except Exception:
-            gear, conf, reason = classify(prompt)
+        gear, conf, reason = classify_text(prompt)
         return {
             "gear": gear,
             "confidence": round(conf, 2),
