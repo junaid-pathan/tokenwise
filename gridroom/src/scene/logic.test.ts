@@ -124,19 +124,32 @@ function ev(e: Partial<DownshiftEvent> & { type: string; id: string }): Downshif
   return { ts: 0, ...e } as DownshiftEvent;
 }
 
+// Narrowing helpers (assert.ok does not narrow for tsc).
+import type { Effect, SparkEffect, LevelEffect, PowerEffect } from "./effects.ts";
+function asSpark(e: Effect | null): SparkEffect {
+  if (!e || e.kind !== "spark") throw new Error("expected spark effect");
+  return e;
+}
+function asLevel(e: Effect | null): LevelEffect {
+  if (!e || e.kind !== "level") throw new Error("expected level effect");
+  return e;
+}
+function asPower(e: Effect | null): PowerEffect {
+  if (!e || e.kind !== "power") throw new Error("expected power effect");
+  return e;
+}
+
 test("default-town fallback: unknown town uses Boston", () => {
   const p = new EventProcessor(centroids);
   p.process(ev({ type: "prompt.received", id: "a", prompt_id: "p1", source: "extension", chars: 5, town: "Nowhereville" }));
   const eff = p.process(ev({ type: "route.decided", id: "b", prompt_id: "p1", gear_needed: 1, gear_used: 1, model: "m", deferred: false, protected: false, reason: "" }));
-  assert.ok(eff && eff.kind === "spark");
-  if (eff.kind === "spark") assert.equal(eff.town, DEFAULT_TOWN);
+  assert.equal(asSpark(eff).town, DEFAULT_TOWN);
 });
 
 test("default-town fallback: missing prompt.received uses Boston", () => {
   const p = new EventProcessor(centroids);
   const eff = p.process(ev({ type: "route.decided", id: "b", prompt_id: "orphan", gear_needed: 1, gear_used: 1, model: "m", deferred: false, protected: false, reason: "" }));
-  assert.ok(eff && eff.kind === "spark");
-  if (eff.kind === "spark") assert.equal(eff.town, DEFAULT_TOWN);
+  assert.equal(asSpark(eff).town, DEFAULT_TOWN);
 });
 
 test("case-insensitive town match", () => {
@@ -149,11 +162,9 @@ test("known town resolves to its centroid", () => {
   const p = new EventProcessor(centroids);
   p.process(ev({ type: "prompt.received", id: "a", prompt_id: "p1", source: "crowd", chars: 5, town: "Springfield" }));
   const eff = p.process(ev({ type: "route.decided", id: "b", prompt_id: "p1", gear_needed: 2, gear_used: 2, model: "m", deferred: false, protected: false, reason: "" }));
-  assert.ok(eff && eff.kind === "spark");
-  if (eff.kind === "spark") {
-    assert.equal(eff.town, "Springfield");
-    assert.deepEqual([eff.lon, eff.lat], centroids["Springfield"]);
-  }
+  const s = asSpark(eff);
+  assert.equal(s.town, "Springfield");
+  assert.deepEqual([s.lon, s.lat], centroids["Springfield"]);
 });
 
 test("event dedup: same id processed once", () => {
@@ -161,7 +172,7 @@ test("event dedup: same id processed once", () => {
   const e = ev({ type: "grid.state", id: "g1", load_mw: 1, level: "red", replay_clock: "", source: "replay" });
   const first = p.process(e);
   const second = p.process(e);
-  assert.ok(first && first.kind === "level");
+  assert.equal(asLevel(first).level, "red");
   assert.equal(second, null);
 });
 
@@ -175,6 +186,5 @@ test("deferred route.decided is skipped (no spark)", () => {
 test("power.sample yields a power effect", () => {
   const p = new EventProcessor(centroids);
   const eff = p.process(ev({ type: "power.sample", id: "w1", watts: 72, device: "T4", source: "estimate" }));
-  assert.ok(eff && eff.kind === "power");
-  if (eff.kind === "power") assert.equal(eff.watts, 72);
+  assert.equal(asPower(eff).watts, 72);
 });

@@ -1,8 +1,8 @@
 # Scene data — Massachusetts towns
 
 ## Files
-- `ma-towns.geojson` — 351 MA municipality polygons, WGS84 (lon/lat), one property: `name` (Title Case). ~516 KB (< 1 MB).
-- `town-centroids.json` — `{ "Town Name": [lon, lat] }` for all 351 towns. Area-weighted centroids computed from `ma-towns.geojson`, so the crowd simulator (B6) can pick towns the scene knows about.
+- `ma-towns.json` — 351 MA municipality polygons, WGS84 (lon/lat), one property: `name` (Title Case). ~516 KB (< 1 MB). The content is a GeoJSON `FeatureCollection`; it carries a `.json` extension so Vite/TypeScript import it natively (no extra loader, no editing `vite.config.ts`).
+- `town-centroids.json` — `{ "Town Name": [lon, lat] }` for all 351 towns. Area-weighted centroids computed from `ma-towns.json`, so the crowd simulator (B6) can pick towns the scene knows about.
 
 ## Attribution
 Source: **MassGIS (Bureau of Geographic Information), Commonwealth of Massachusetts** — "2020 U.S. Census Towns" municipal polygons, derived by MassGIS from U.S. Census Bureau 2020 data. Copyright: *US Census Bureau, MassGIS*. Public data.
@@ -23,7 +23,7 @@ npx --yes mapshaper@0.6.100 ma-raw.geojson \
   -simplify 8% keep-shapes \
   -each "name = (TOWN20||'').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())" \
   -each "delete TOWN20" \
-  -o format=geojson precision=0.0001 ma-towns.geojson
+  -o format=geojson precision=0.0001 ma-towns.json
 ```
 Result: 516,345 bytes (< 1 MB target).
 
