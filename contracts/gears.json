@@ -1,12 +1,13 @@
 {
-  "_comment": "FROZEN after Phase 0. Users see plain names only (Quick/Light/Standard/Heavy/Max). Bedrock model IDs are placeholders: copy exact IDs from the Bedrock console once access is on. est_wh_per_1k_out_tokens filled at the Hardware gate (joint contract: PR).",
+  "_comment": "FROZEN after Phase 0 (changed only via joint contract: PRs). Users see plain names only (Quick/Light/Standard/Heavy/Max). bedrock_model IDs verified with a live Converse call in us-east-2 on 2026-10-24; the us. prefix is the cross-region inference profile and is required. est_wh_per_1k_out_tokens is filled at the Hardware gate.",
+  "bedrock_region": "us-east-2",
   "gears": [
     {
       "gear": 1,
       "user_sees": "Quick",
       "typical_prompt": "a fact, a sum, a one-line rewrite",
       "ollama_model": "qwen2.5:0.5b",
-      "bedrock_model": "amazon.nova-micro-v1:0",
+      "bedrock_model": "us.amazon.nova-micro-v1:0",
       "est_wh_per_1k_out_tokens": null,
       "color": "#22c55e"
     },
@@ -15,7 +16,7 @@
       "user_sees": "Light",
       "typical_prompt": "short explanation, summarize, extract",
       "ollama_model": "llama3.2:1b",
-      "bedrock_model": "amazon.nova-lite-v1:0",
+      "bedrock_model": "us.amazon.nova-lite-v1:0",
       "est_wh_per_1k_out_tokens": null,
       "color": "#84cc16"
     },
@@ -24,7 +25,7 @@
       "user_sees": "Standard",
       "typical_prompt": "multi-paragraph writing, simple code",
       "ollama_model": "llama3.2:3b",
-      "bedrock_model": "anthropic.claude-3-haiku-20240307-v1:0",
+      "bedrock_model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
       "est_wh_per_1k_out_tokens": null,
       "color": "#eab308"
     },
@@ -33,7 +34,7 @@
       "user_sees": "Heavy",
       "typical_prompt": "multi-step reasoning, real code",
       "ollama_model": "llama3.1:8b",
-      "bedrock_model": "amazon.nova-pro-v1:0",
+      "bedrock_model": "us.amazon.nova-pro-v1:0",
       "est_wh_per_1k_out_tokens": null,
       "color": "#f97316"
     },
@@ -42,7 +43,7 @@
       "user_sees": "Max",
       "typical_prompt": "hard math, architecture, long constrained writing",
       "ollama_model": null,
-      "bedrock_model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "bedrock_model": "us.anthropic.claude-sonnet-4-6",
       "est_wh_per_1k_out_tokens": null,
       "color": "#ef4444"
     }
