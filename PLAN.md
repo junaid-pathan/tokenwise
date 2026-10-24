@@ -1,63 +1,66 @@
-# PLAN.md — the 4-hour cut-list
+# PLAN.md — full PRD scope in 5 hours
 
-The PRD is scoped for 8 hours and 21 PRs. We have **4 hours and two people**.
-This file is the ruthless cut: we ship the **90-second demo loop** and nothing
-that doesn't serve it. Everything here is already scaffolded in Phase 0, so both
-of you start writing real code immediately.
+Nothing is cut from the PRD. All 21 PRs ship: Colab GPU host, real power meter,
+trained classifier, extension content script, quality eval, 3D scene, everything.
+Phase 0 (contracts, skeleton, hooks) is already done and merged on `main`.
 
-## What we are actually shipping (the demo loop)
-1. June 24 replay drives load up → Grid agent turns it **red**.
-2. Crowd sim fires real prompts → Triage gears them → sparks in the Grid Room.
-3. Utility asks for a 25% cut → Coordinator commits + reports → Utility verdict.
-4. Scorecard shows joules/answer + quality kept. Narrator speaks each step.
+The PRD budgets about 6 h 35 min per person. We have 5 h. That fits only if each
+of you runs **2 Kiro agents in parallel**, one per PRD row, each in its own git
+worktree (the PRD's own advice):
 
-## What we CUT (do not build in 4h)
-- Colab GPU host + real nvidia-smi power meter → **use `estimate` source** (`POWER_SOURCE=estimate`).
-- Trained classifier (embeddings + logreg) → **rules-only Triage**. (A4 rules path only.)
-- Extension content script on live ChatGPT/Claude → **side-panel-only demo**.
-- Quality eval via Bedrock judge → **hand-labelled number, n=10**, if time.
-- OpenAI-compatible `/v1/chat/completions`, App Runner deploy, Kaggle fallback.
-- Real Bedrock for answers → **stub/Ollama-local or estimated text is fine** for the loop; use Bedrock only for Narrator lines if AWS is ready, else template lines.
+```powershell
+git worktree add ..\ds-a4 -b a/triage-classifier origin/main
+```
 
-## Time budget (4 hours = 240 min). Hour 0 = now.
+One agent per folder at a time. Never two agents on the same folder.
 
-| Time | Both / A (Aru) | B (Junaid, you) |
-| --- | --- | --- |
-| 0:00–0:10 | Enable hooks, `pip install`, `npm install`, read your doc | same |
-| 0:10–1:30 | **A-grid** (grid levels + /v1/grid + /v1/demo/alert), **A-triage-rules** (prompt.received → triage.decided + /v1/triage) | **B-replay** (grid.load from a cached June-24 curve + /v1/demo/replay), **B-utility** (red-twice → request; report → verdict) |
-| 1:30–1:40 | **Milestone 1 "first spark"** (joint 10-min check, see milestones.md) | same |
-| 1:40–3:00 | **A-coordinator** (policy → route.decided; request → commit + report), **A-answer** (/v1/answer → answer.completed) | **B-crowd-sim** (prompts follow load → prompt.received), **B-narrator** (template lines on commit/report/verdict) |
-| 3:00–3:15 | **Milestone 2 "first negotiation"** (turn off mock, run one real replay) | same |
-| 3:15–3:50 | **A-hud** (wattmeter, load curve, scorecard panel, negotiation log) + **A-scorecard** (metrics → scorecard.update) | **B-scene** (MA floor tint by grid.state, towers, sparks on route.decided) + **B-panel** (grid light + narrator line) |
-| 3:50–4:00 | **Rehearse** the 90s demo, record a backup video, submit | same |
+## Ordering rule: core first, polish last
+The PRD already orders every row Core -> Polish. If time runs short, the LAST
+rows slip, and each has a fallback written in the PRD (see "Fallbacks" below).
+Core rows are never skipped.
 
-Each side is ~5 real PRs. Branch from latest `main` every time. If a piece
-slips, drop it to its fallback (see the CUT list) rather than blocking the loop.
+## Timeline (T+0 = start of Phase 1; Phase 0 is done)
 
-## Reduced PR list (branch names)
+| Time | Phase | Person A (Aru) | Person B (Junaid) |
+| --- | --- | --- | --- |
+| T+0:00–1:55 | 1 Core | A1 colab-host, A2 power-meter, A3 ollama-client, A4 triage (rules first, ~20 min, then classifier), A5 grid-agent | B1 grid-replay, B2 bedrock-client, B3 training-data, B4 utility-agent, B5 narrator |
+| ~T+1:10 | Hardware gate + labels hand-off | STOP 10 min with B. Run the 10-minute test, choose the power source together. Take B's labels. | Same. Hand over `heldout.jsonl` + `train.csv`. |
+| T+1:55–2:05 | Milestone 1 "first spark" | joint check | joint check |
+| T+2:05–3:35 | 2 Core | A6 coordinator-policy, A7 coordinator-negotiation, A8 answer-endpoint, A9 extension-content | B6 crowd-sim, B7 gridroom-scene |
+| T+3:35–3:50 | Milestone 2 "first negotiation" | turn off `--mock`, full replay on real agents | same |
+| T+3:50–4:30 | 3 Polish | A10 scorecard, A11 gridroom-hud, A12 quality-eval | B8 extension-panel, B9 polish-demo |
+| T+4:30–5:00 | 4 Together | rehearse, backup video, README, submit | same |
 
-### A — Aru (demand side), in order
-- `a/grid-agent` — grid.load → level → grid.state; `/v1/grid`, `/v1/demo/alert`
-- `a/triage-rules` — prompt.received → triage.decided (rules); `POST /v1/triage`
-- `a/coordinator` — policy → route.decided; utility.request → commit → report
-- `a/answer-endpoint` — `POST /v1/answer` → answer.completed (energy via estimate)
-- `a/gridroom-hud` + `a/scorecard` — HUD panels + metrics → scorecard.update
+**Features freeze at T+4:30.**
 
-### B — Junaid (supply side), in order
-- `b/grid-replay` — cached June-24 curve → grid.load; `POST /v1/demo/replay`
-- `b/utility-agent` — red-twice → utility.request; report → utility.verdict; `POST /v1/utility/request`
-- `b/crowd-sim` — prompts follow replay load → prompt.received (with `town`)
-- `b/narrator` — template lines on commit/report/verdict/level-change
-- `b/gridroom-scene` + `b/extension-panel` — 3D floor/towers/sparks + panel grid light
+## Critical path (what blocks whom)
+- B3 labels -> A4 classifier training (A trains on 100 hand-labelled prompts until they land).
+- B1 replay -> A5 grid agent tuning.
+- A2 power meter -> Hardware gate (A's merged PR triggers the STOP rule).
+- B2 bedrock client -> A12 quality eval and B5 narrator's real lines.
+- Everything else builds against `DOWNSHIFT_MOCK=1` and `contracts/fixtures/`.
 
-## Hard rules while we move fast
-- Never edit `contracts/`, `engine/app.py`, `engine/bus.py`. They're frozen.
-- Build against `DOWNSHIFT_MOCK=1` and `contracts/fixtures/` so you never wait on the other person.
-- One branch per row from latest `main`. Squash merge. The other person reviews in <15 min.
-- Keep the `estimate` power source. No Hardware gate in 4h.
-- Commit style: lowercase verb + thing, <=50 chars. No AI co-author lines (hook enforces).
+## Fallbacks (from the PRD; use only if a row misses its slot)
+- No AWS: local Gears 1-3, template Narrator lines, hand-checked quality (n=30).
+- No measured power: labelled estimates ("Estimated from published measurements", cited on screen).
+- Colab gives no GPU: Kaggle T4, then MX450 local (Gears 1-2), then labelled estimates.
+- Extension breaks on a site: use the popup.
+- 3D map data fights you: hex-tile Massachusetts map.
+- Anything failing at a milestone gets one owner and 15 minutes, then its fallback.
 
-## Definition of done for the hackathon
-`DOWNSHIFT_MOCK=0`, one real replay: grid goes red, Utility requests, Coordinator
-commits + reports, Utility accepts, scorecard + narrator update, Grid Room shows
-it. That's the submission. Everything else is bonus.
+## Hard rules
+- Never edit `contracts/`, `engine/app.py`, `engine/bus.py` without a joint `contract:` PR.
+- One PRD row = one branch = one PR. Branch from latest `main`. Never base a PR on another feature branch.
+- Before opening a PR: `git fetch && git rebase origin/main`, run the row's "Done when" yourself.
+- PR title `A4: triage classifier`. Other person reviews within 15 min. Squash merge.
+- Commits: lowercase verb + thing, 50 chars max. No AI co-author lines (hook enforces).
+- Hardware gate: nobody picks a power source alone. Engine stays on `estimate` until then.
+- Anything simulated is labelled "Simulated" in the UI.
+
+## Stretch (only if ahead; claim it in chat so only one of you builds it)
+`POST /v1/chat/completions`, OpenAI-compatible, model `downshift-auto`, headers
+`X-Downshift-Deferrable` and `X-Downshift-Priority: critical`. Then AWS App Runner deploy.
+
+## Definition of done
+Milestone 2 checklist in `docs/milestones.md` fully ticked with mock OFF, plus the
+90-second demo rehearsed and a backup video recorded.

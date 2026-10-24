@@ -40,10 +40,10 @@ cd gridroom; npm install; npm run dev   # http://localhost:5173
 ```
 
 ## Planning docs
-- `PLAN.md` — the 4-hour cut-list and who does what
-- `docs/person-a-aru.md` — Aru's tasks (demand side)
-- `docs/person-b-junaid.md` — Junaid's tasks (supply side)
-- `docs/milestones.md` — the two joint checkpoints
+- `PLAN.md` — full PRD scope in 5 hours: timeline, critical path, fallbacks
+- `docs/person-a-aru.md` — Aru's 12 PRs (demand side)
+- `docs/person-b-junaid.md` — Junaid's 9 PRs (supply side)
+- `docs/milestones.md` — Hardware gate, Milestones 1 and 2, the 90-second demo
 
 ## Rules
 One PRD row = one branch = one PR. Branch from latest `main`. Edit only your
