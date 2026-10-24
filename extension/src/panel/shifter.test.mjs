@@ -65,3 +65,9 @@ test("isValid and POSITIONS", () => {
   assert.ok(!isValid(0));
   assert.deepEqual(POSITIONS, ["auto", 1, 2, 3, 4, 5]);
 });
+
+test("modeToPosition accepts pickaxe tier names", () => {
+  assert.equal(modeToPosition("Wooden"), 1);
+  assert.equal(modeToPosition("iron"), 3);
+  assert.equal(modeToPosition("Netherite"), 5);
+});

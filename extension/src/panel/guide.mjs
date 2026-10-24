@@ -3,8 +3,8 @@
 
 export const GUIDE_CARDS = [
   {
-    title: "Five gears, one shifter",
-    body: "Quick, Light, Standard, Heavy, Max. Pick a gear, or leave it on Auto and Downshift chooses the right one for each prompt.",
+    title: "Five tools, one hotbar",
+    body: "Wooden, Stone, Iron, Diamond, Netherite: five pickaxes from lightest to strongest. Pick one, or leave it on Auto and Downshift picks the right tool for each prompt.",
   },
   {
     title: "The grid light",
