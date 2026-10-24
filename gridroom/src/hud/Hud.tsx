@@ -103,6 +103,45 @@ function LoadCurve({ events }: { events: DownshiftEvent[] }) {
   );
 }
 
+function Scorecard({ events }: { events: DownshiftEvent[] }) {
+  const card = last(events, "scorecard.update");
+  if (!card) return null;
+  const nd = card.no_downshift;
+  const ds = card.downshift;
+  const saved =
+    nd.j_per_answer > 0
+      ? ((nd.j_per_answer - ds.j_per_answer) / nd.j_per_answer) * 100
+      : 0;
+
+  const row = (label: string, a: number, b: number, unit: string) => (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+      <span style={{ color: "#8b949e" }}>{label}</span>
+      <span>
+        <span style={{ color: "#8b949e" }}>{a.toFixed(1)}</span>
+        {" → "}
+        <span style={{ color: "#22c55e" }}>
+          {b.toFixed(1)}
+          {unit}
+        </span>
+      </span>
+    </div>
+  );
+
+  return (
+    <div style={PANEL}>
+      <div style={{ color: "#8b949e", textTransform: "uppercase", fontSize: 11 }}>
+        Scorecard · No Downshift → Downshift
+      </div>
+      {row("joules / answer", nd.j_per_answer, ds.j_per_answer, " J")}
+      {row("p50 latency", nd.p50_latency_ms, ds.p50_latency_ms, " ms")}
+      {row("quality match", nd.quality_match_pct, ds.quality_match_pct, " %")}
+      <div style={{ marginTop: 6, fontWeight: 600, color: "#22c55e" }}>
+        {saved.toFixed(0)}% energy saved
+      </div>
+    </div>
+  );
+}
+
 export default function Hud({
   events,
   connected,
@@ -120,6 +159,7 @@ export default function Hud({
       </div>
       <Wattmeter events={events} />
       <LoadCurve events={events} />
+      <Scorecard events={events} />
     </div>
   );
 }
