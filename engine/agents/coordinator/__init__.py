@@ -83,7 +83,10 @@ def register(bus, app):
             "gear_needed": gear_needed,
             "gear_used": gear_used,
             "model": model_for(gear_used),
-            "deferred": st["active_request"] is not None and not protected,
+            # No deferral queue yet (needs a deferrable flag on the prompt), so
+            # nothing is deferred. Marking every prompt deferred during a cut
+            # request would make the Grid Room show all traffic as queued.
+            "deferred": False,
             "protected": protected,
             "reason": reason,
         })
