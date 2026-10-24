@@ -46,18 +46,52 @@
     return resp.json(); // { gear, confidence, label, reason }
   }
 
+  function ensureBadge() {
+    let badge = document.getElementById("downshift-badge");
+    if (!badge) {
+      badge = document.createElement("div");
+      badge.id = "downshift-badge";
+      Object.assign(badge.style, {
+        position: "fixed",
+        bottom: "90px",
+        right: "24px",
+        zIndex: "2147483647",
+        font: "600 12px system-ui, sans-serif",
+        color: "#06090d",
+        padding: "6px 10px",
+        borderRadius: "999px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        pointerEvents: "none",
+        transition: "opacity 0.2s, background 0.2s",
+        opacity: "0",
+      });
+      document.body.appendChild(badge);
+    }
+    return badge;
+  }
+
+  function showGear(r) {
+    const badge = ensureBadge();
+    badge.textContent = `Gear ${r.gear} · ${r.label}`;
+    badge.style.background = GEAR_COLORS[r.gear] || "#8b949e";
+    badge.title = r.reason || "";
+    badge.style.opacity = "1";
+  }
+
   let timer = null;
   function onInput(el) {
     clearTimeout(timer);
     timer = setTimeout(async () => {
       const prompt = composerText(el);
-      if (prompt.length < 3) return;
+      if (prompt.length < 3) {
+        const badge = document.getElementById("downshift-badge");
+        if (badge) badge.style.opacity = "0";
+        return;
+      }
       try {
         const r = await triage(prompt);
-        console.log(
-          `[downshift] gear ${r.gear} (${r.label}) · ${r.reason}`,
-          GEAR_COLORS[r.gear],
-        );
+        showGear(r);
+        console.log(`[downshift] gear ${r.gear} (${r.label}) · ${r.reason}`);
       } catch (e) {
         // engine offline is fine — stay silent, the panel shows connection state
       }
