@@ -78,11 +78,22 @@ def register(bus, app):
                 status_code=422,
                 detail=f"level must be one of {_VALID_LEVELS}",
             )
-        # keep the last known load if we have one, else a representative value
+        # Keep the last known load only if it already sits in the requested
+        # level's band. Otherwise use a representative load for that band, so
+        # downstream numbers (Narrator, HUD) never say e.g. "red at 0 MW".
         last = state["latest"] or {}
+        last_mw = float(last.get("load_mw", 0.0))
+        if last_mw > 0 and level_for(last_mw) == level:
+            load_mw = last_mw
+        else:
+            load_mw = {
+                "green": green_max - 1800.0,
+                "yellow": (green_max + yellow_max) / 2.0,
+                "red": yellow_max + 1000.0,
+            }[level]
         st = {
             "type": "grid.state",
-            "load_mw": float(last.get("load_mw", 0.0)),
+            "load_mw": load_mw,
             "level": level,
             "replay_clock": last.get("replay_clock", ""),
             "source": "live",
