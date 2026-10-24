@@ -60,7 +60,10 @@ export function modeToPosition(mode) {
   }
   const asNum = Number(s);
   if (Number.isInteger(asNum) && isValid(asNum)) return asNum;
-  const names = { quick: 1, light: 2, standard: 3, heavy: 4, max: 5 };
+  const names = {
+    quick: 1, light: 2, standard: 3, heavy: 4, max: 5,
+    wooden: 1, stone: 2, iron: 3, diamond: 4, netherite: 5,
+  };
   if (s in names) return names[s];
   return "auto";
 }

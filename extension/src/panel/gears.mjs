@@ -11,6 +11,7 @@
 export const GEARS = [
   {
     gear: 1,
+    tier: "Wooden", // pickaxe tier shown in the panel (UI only, not in gears.json)
     user_sees: "Quick",
     typical_prompt: "a fact, a sum, a one-line rewrite",
     est_wh_per_1k_out_tokens: null,
@@ -19,6 +20,7 @@ export const GEARS = [
   },
   {
     gear: 2,
+    tier: "Stone", // pickaxe tier shown in the panel (UI only, not in gears.json)
     user_sees: "Light",
     typical_prompt: "short explanation, summarize, extract",
     est_wh_per_1k_out_tokens: null,
@@ -27,6 +29,7 @@ export const GEARS = [
   },
   {
     gear: 3,
+    tier: "Iron", // pickaxe tier shown in the panel (UI only, not in gears.json)
     user_sees: "Standard",
     typical_prompt: "multi-paragraph writing, simple code",
     est_wh_per_1k_out_tokens: null,
@@ -35,6 +38,7 @@ export const GEARS = [
   },
   {
     gear: 4,
+    tier: "Diamond", // pickaxe tier shown in the panel (UI only, not in gears.json)
     user_sees: "Heavy",
     typical_prompt: "multi-step reasoning, real code",
     est_wh_per_1k_out_tokens: null,
@@ -43,6 +47,7 @@ export const GEARS = [
   },
   {
     gear: 5,
+    tier: "Netherite", // pickaxe tier shown in the panel (UI only, not in gears.json)
     user_sees: "Max",
     typical_prompt: "hard math, architecture, long constrained writing",
     est_wh_per_1k_out_tokens: null,

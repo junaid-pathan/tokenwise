@@ -9,48 +9,36 @@
     <link rel="stylesheet" href="panel.css" />
   </head>
   <body>
+    <!-- One pixel-art pickaxe, recoloured per tier through CSS variables. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <symbol id="pick" viewBox="0 0 16 16">
+        <path class="pk-dark" d="M3 1h4v1h-4zM3 2h1v1h-1zM7 2h2v1h-2zM3 3h3v1h-3zM9 3h1v1h-1zM6 4h2v1h-2zM10 4h1v1h-1zM8 5h1v1h-1zM11 5h1v1h-1zM9 6h1v1h-1zM12 6h1v1h-1zM10 7h1v1h-1zM13 7h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM11 9h1v1h-1zM14 9h1v3h-1zM12 10h1v2h-1zM12 12h3v1h-3z" />
+        <path class="pk-light" d="M4 2h3v1h-3zM6 3h3v1h-3zM8 4h2v1h-2zM9 5h2v1h-2zM10 6h2v1h-2zM11 7h2v1h-2zM12 8h1v1h-1zM12 9h2v1h-2zM13 10h1v2h-1z" />
+        <path class="pk-stick" d="M12 3h1v1h-1zM8 7h1v1h-1zM6 9h1v1h-1zM4 11h1v1h-1zM2 13h1v1h-1z" />
+        <path class="pk-stick2" d="M11 4h1v1h-1zM7 8h1v1h-1zM5 10h1v1h-1zM3 12h1v1h-1zM1 14h1v1h-1z" />
+      </symbol>
+    </svg>
+
     <!-- Polite live region for grid-level changes and the narrator line. -->
     <div id="live" class="visually-hidden" aria-live="polite" role="status" aria-label="Announcements"></div>
 
     <header class="topbar">
-      <div class="brand">
-        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-          <circle cx="16" cy="16" r="15" class="mark-bg" />
-          <path d="M10 21c0-7 5-11 13-12-1 8-5 13-12 13" class="mark-leaf" />
-          <path d="M10 22l7-7" class="mark-vein" />
-        </svg>
-        <div>
-          <h1>Downshift</h1>
-          <span class="kicker">Grid-aware AI</span>
-        </div>
+      <span class="grass-block" aria-hidden="true"></span>
+      <div>
+        <h1>Downshift</h1>
+        <span class="kicker">Grid-aware AI</span>
       </div>
     </header>
 
-    <!-- Hero: the grid light as a globe with a level ring. -->
-    <section class="card hero" aria-label="Power grid">
+    <!-- Grid light: a beacon block in the level colour, plus the level word. -->
+    <section class="gui hero" aria-label="Power grid">
       <div
         id="grid-light"
         class="grid-light"
         role="status"
         aria-label="Grid status: connecting"
       >
-        <div class="gauge" aria-hidden="true">
-          <span class="dot"></span>
-          <svg class="globe" viewBox="0 0 120 120" focusable="false">
-            <defs>
-              <radialGradient id="globe-fill" cx="38%" cy="32%" r="75%">
-                <stop offset="0" stop-color="#8fd3a4" />
-                <stop offset="0.6" stop-color="#4caf6e" />
-                <stop offset="1" stop-color="#2d7a4a" />
-              </radialGradient>
-            </defs>
-            <circle cx="60" cy="60" r="50" fill="url(#globe-fill)" />
-            <path class="land" d="M30 42c8-9 20-12 27-6 4 4-2 9 3 13 5 3 12-1 14 5 2 7-8 9-14 8-8-1-10 6-17 5-9-1-15-9-15-15 0-4 0-7 2-10z" />
-            <path class="land" d="M70 26c7-2 15 1 19 6 3 4-3 6-7 5-4-1-7 3-11 1-4-2-6-10-1-12z" />
-            <path class="land" d="M64 74c6-3 15-2 20 3 4 4 0 11-6 13-6 2-9 8-14 6-5-3-2-10-4-14-1-4 0-7 4-8z" />
-            <ellipse cx="44" cy="36" rx="14" ry="7" fill="#fff" opacity="0.18" />
-          </svg>
-        </div>
+        <span class="beacon" aria-hidden="true"><span class="dot"></span></span>
         <div class="grid-text">
           <span class="grid-label">Grid status</span>
           <span class="grid-word" id="grid-word">Connecting</span>
@@ -62,22 +50,14 @@
     <!-- Grid Alert / note banner. role=alert so red announces assertively. -->
     <div id="banner" class="banner" role="alert" aria-live="assertive" aria-label="Grid alert"></div>
 
-    <section class="card narrator" aria-label="Narrator">
-      <span class="narrator-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" focusable="false"><path d="M4 5h16v10H9l-5 4z" /></svg>
-      </span>
-      <span class="narrator-body">
-        <span class="tag">Narrator</span>
-        <span id="narrator-text">Waiting for the engine&#8230;</span>
-      </span>
+    <section class="chat narrator" aria-label="Narrator">
+      <span class="tag">&lt;Narrator&gt;</span>
+      <span id="narrator-text">Waiting for the engine&#8230;</span>
     </section>
 
-    <!-- Gear shifter: radio group. Arrow keys step Auto, 1..5 in order. -->
-    <section class="card shifter" aria-labelledby="shifter-h2">
-      <div class="card-head">
-        <h2 id="shifter-h2">Gear</h2>
-        <span class="hint">Lighter gears use less energy</span>
-      </div>
+    <!-- Gear shifter as a tool hotbar: radio group, arrow keys step Auto, 1..5. -->
+    <section class="gui shifter" aria-labelledby="shifter-h2">
+      <h2 id="shifter-h2">Pick your tool</h2>
       <div
         id="shifter"
         class="shifter-grid"
@@ -85,79 +65,92 @@
         aria-label="Gear shifter. Use arrow keys to change gear."
       >
         <button type="button" class="gear auto" role="radio" data-pos="auto" aria-checked="true">
-          <span class="auto-icon" aria-hidden="true">A</span>
-          <span class="auto-text">
-            <span class="name">Auto</span>
-            <span class="num">Picks the gear for you</span>
-          </span>
+          <span class="name">Auto</span>
+          <span class="num">Picks the tool for each prompt</span>
           <span class="switch" aria-hidden="true"></span>
         </button>
 
         <div class="track">
-          <button type="button" class="gear g1" role="radio" data-pos="1" aria-checked="false">
-            <span class="knob" aria-hidden="true">1</span>
-            <span class="name">Quick</span>
-            <span class="num visually-hidden">Gear 1</span>
+          <button type="button" class="gear g1 t-wood" role="radio" data-pos="1" aria-checked="false">
+            <span class="slot-num" aria-hidden="true">1</span>
+            <svg class="pick" aria-hidden="true" focusable="false"><use href="#pick" /></svg>
+            <span class="name">Wooden</span>
+            <span class="num visually-hidden">Gear 1, Quick</span>
             <span class="detail">
+              <span class="tip-title" aria-hidden="true">Wooden Pickaxe</span>
+              <span class="tip-gear">Gear 1 · Quick</span>
               <span class="pips" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></span>
               <span class="desc">a fact, a sum, a one-line rewrite</span>
             </span>
           </button>
-          <button type="button" class="gear g2" role="radio" data-pos="2" aria-checked="false">
-            <span class="knob" aria-hidden="true">2</span>
-            <span class="name">Light</span>
-            <span class="num visually-hidden">Gear 2</span>
+          <button type="button" class="gear g2 t-stone" role="radio" data-pos="2" aria-checked="false">
+            <span class="slot-num" aria-hidden="true">2</span>
+            <svg class="pick" aria-hidden="true" focusable="false"><use href="#pick" /></svg>
+            <span class="name">Stone</span>
+            <span class="num visually-hidden">Gear 2, Light</span>
             <span class="detail">
+              <span class="tip-title" aria-hidden="true">Stone Pickaxe</span>
+              <span class="tip-gear">Gear 2 · Light</span>
               <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
               <span class="desc">short explanation, summarize, extract</span>
             </span>
           </button>
-          <button type="button" class="gear g3" role="radio" data-pos="3" aria-checked="false">
-            <span class="knob" aria-hidden="true">3</span>
-            <span class="name">Standard</span>
-            <span class="num visually-hidden">Gear 3</span>
+          <button type="button" class="gear g3 t-iron" role="radio" data-pos="3" aria-checked="false">
+            <span class="slot-num" aria-hidden="true">3</span>
+            <svg class="pick" aria-hidden="true" focusable="false"><use href="#pick" /></svg>
+            <span class="name">Iron</span>
+            <span class="num visually-hidden">Gear 3, Standard</span>
             <span class="detail">
+              <span class="tip-title" aria-hidden="true">Iron Pickaxe</span>
+              <span class="tip-gear">Gear 3 · Standard</span>
               <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
               <span class="desc">multi-paragraph writing, simple code</span>
             </span>
           </button>
-          <button type="button" class="gear g4" role="radio" data-pos="4" aria-checked="false">
-            <span class="knob" aria-hidden="true">4</span>
-            <span class="name">Heavy</span>
-            <span class="num visually-hidden">Gear 4</span>
+          <button type="button" class="gear g4 t-diamond" role="radio" data-pos="4" aria-checked="false">
+            <span class="slot-num" aria-hidden="true">4</span>
+            <svg class="pick" aria-hidden="true" focusable="false"><use href="#pick" /></svg>
+            <span class="name">Diamond</span>
+            <span class="num visually-hidden">Gear 4, Heavy</span>
             <span class="detail">
+              <span class="tip-title" aria-hidden="true">Diamond Pickaxe</span>
+              <span class="tip-gear">Gear 4 · Heavy</span>
               <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span>
               <span class="desc">multi-step reasoning, real code</span>
             </span>
           </button>
-          <button type="button" class="gear g5" role="radio" data-pos="5" aria-checked="false">
-            <span class="knob" aria-hidden="true">5</span>
-            <span class="name">Max</span>
-            <span class="num visually-hidden">Gear 5</span>
+          <button type="button" class="gear g5 t-netherite" role="radio" data-pos="5" aria-checked="false">
+            <span class="slot-num" aria-hidden="true">5</span>
+            <svg class="pick" aria-hidden="true" focusable="false"><use href="#pick" /></svg>
+            <span class="name">Netherite</span>
+            <span class="num visually-hidden">Gear 5, Max</span>
             <span class="detail">
+              <span class="tip-title" aria-hidden="true">Netherite Pickaxe</span>
+              <span class="tip-gear">Gear 5 · Max</span>
               <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span>
               <span class="desc">hard math, architecture, long writing</span>
             </span>
           </button>
         </div>
       </div>
-      <p class="shifter-help">When the grid is busy, shift down.</p>
+      <p class="shifter-help">Lighter tools use less energy. When the grid is busy, shift down.</p>
     </section>
 
-    <!-- Answer view -->
-    <section class="card ask" aria-labelledby="ask-h2">
-      <div class="card-head">
-        <h2 id="ask-h2">Ask</h2>
-      </div>
+    <!-- Answer view: a chat bar to ask, a book page for the answer. -->
+    <section class="gui ask" aria-labelledby="ask-h2">
+      <h2 id="ask-h2">Ask me anything</h2>
       <label for="prompt" class="visually-hidden">Your prompt</label>
       <div class="composer">
-        <textarea id="prompt" placeholder="Ask anything&#8230;"></textarea>
-        <button type="button" class="btn" id="ask-btn">Ask</button>
+        <span class="caret" aria-hidden="true">&gt;</span>
+        <textarea id="prompt" placeholder="Type a question&#8230;"></textarea>
       </div>
-      <label class="toggle">
-        <input type="checkbox" id="protected" />
-        <span class="toggle-text">Best answer</span>
-      </label>
+      <div class="row">
+        <button type="button" class="btn" id="ask-btn">Ask</button>
+        <label class="toggle">
+          <input type="checkbox" id="protected" />
+          <span class="toggle-text">Best answer</span>
+        </label>
+      </div>
       <p class="shifter-help" id="protected-help">
         Best answer never shifts down, even when the grid is busy.
       </p>
@@ -175,12 +168,8 @@
 
     <!-- First-run guide (3 cards) -->
     <div id="guide" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title">
-      <div class="guide">
-        <svg class="guide-leaf" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-          <circle cx="16" cy="16" r="15" class="mark-bg" />
-          <path d="M10 21c0-7 5-11 13-12-1 8-5 13-12 13" class="mark-leaf" />
-          <path d="M10 22l7-7" class="mark-vein" />
-        </svg>
+      <div class="guide gui">
+        <span class="grass-block big" aria-hidden="true"></span>
         <h3 id="guide-title"></h3>
         <p id="guide-body"></p>
         <div class="dots" aria-hidden="true">
