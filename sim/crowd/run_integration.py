@@ -55,7 +55,25 @@ def run(speed: float = 14400.0) -> dict:
         resp.raise_for_status()
         duration = resp.json()["duration_s"]
         print(f"[run] replay started speed={speed} duration~{duration:.1f}s")
-        time.sleep(duration + 3.0)
+
+        # Wait until all 1440 replay minutes have been published (the loop may
+        # run slower than `duration` when the whole cascade saturates the CPU at
+        # very high speeds), then drain outstanding crowd tasks. Bounded by a
+        # generous timeout so the run always ends.
+        deadline = time.time() + duration + 60.0
+        expected_minutes = 1440
+        while time.time() < deadline:
+            minutes = sum(1 for e in collected if e.get("type") == "grid.load")
+            if minutes >= expected_minutes:
+                break
+            time.sleep(0.25)
+        # drain emissions + answers still in flight
+        drain_deadline = time.time() + 15.0
+        while time.time() < drain_deadline:
+            if sim.inflight == 0 and len(sim._pending) == 0:
+                break
+            time.sleep(0.1)
+        time.sleep(0.5)
 
         stats = dict(sim.stats)
 

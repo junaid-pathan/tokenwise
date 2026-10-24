@@ -16,7 +16,6 @@ sim/crowd/run_integration.py runs the same flow and prints the full report.
 from __future__ import annotations
 
 import os
-import time
 
 import pytest
 
@@ -27,35 +26,20 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_crowd_loop_through_real_engine():
-    from fastapi.testclient import TestClient
+    from sim.crowd.run_integration import run
 
-    import engine.app as engine_app
-    import sim.crowd
+    report = run(speed=14400.0)
 
-    collected = []
-
-    with TestClient(engine_app.app) as client:
-        bus = engine_app.bus
-
-        async def collector(ev):
-            collected.append(ev)
-
-        bus.subscribe("*", collector)
-        sim = sim.crowd.register(bus, engine_app.app)  # noqa: F841
-        assert sim is not None
-
-        # speed 14400 => full 24 h day in ~6 s.
-        resp = client.post("/v1/demo/replay", json={"date": "2025-06-24", "speed": 14400})
-        assert resp.status_code == 200
-        duration = resp.json()["duration_s"]
-
-        # wait for the replay to finish plus drain time.
-        time.sleep(duration + 3.0)
-
-    received = [e for e in collected if e["type"] == "prompt.received" and e.get("source") == "crowd"]
-    answers = [e for e in collected if e["type"] == "answer.completed"]
-
-    assert len(received) > 0, "crowd emitted no prompts"
-    # ~200/replay-hour * 24 replay-hours scaled by load; allow a wide band.
-    assert 2000 <= len(received) <= 7000, f"unexpected crowd volume: {len(received)}"
-    assert len(answers) >= len(received) * 0.5
+    assert report["crowd_prompts"] > 0, "crowd emitted no prompts"
+    # ~200/replay-hour on average; allow a wide band for Poisson + saturation.
+    assert 120 <= report["prompts_per_replay_hour"] <= 260
+    # every crowd prompt must be triaged and routed by Aru's agents.
+    assert report["every_prompt_triaged"] is True
+    assert report["every_prompt_routed"] is True
+    # loop closes: answers ~= routed.
+    assert report["answered"] >= report["routed"] * 0.95
+    # all energy is estimated (no live meter / tunnel) or a mix if a meter is up.
+    assert set(report["energy_source_mix"]).issubset({"estimated", "measured"})
+    # roughly 1 in 10 attempted real generation.
+    ratio = report["real_attempts"] / max(1, report["crowd_prompts"])
+    assert 0.05 <= ratio <= 0.15
