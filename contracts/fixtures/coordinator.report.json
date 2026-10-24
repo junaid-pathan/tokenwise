@@ -1,0 +1,1 @@
+{ "type": "coordinator.report", "id": "f-report-001", "ts": 1750780830000, "request_id": "r-001", "achieved_cut_pct": 24.3, "joules_baseline": 1000.0, "joules_actual": 757.0 }

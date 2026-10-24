@@ -1,0 +1,1 @@
+{ "type": "scorecard.update", "id": "f-score-001", "ts": 1750780830200, "no_downshift": { "j_per_answer": 18.2, "quality_match_pct": 100.0, "p50_latency_ms": 900.0 }, "downshift": { "j_per_answer": 11.4, "quality_match_pct": 94.0, "p50_latency_ms": 520.0 } }

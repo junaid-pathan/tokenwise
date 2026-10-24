@@ -1,0 +1,1 @@
+{ "type": "narrator.line", "id": "f-narr-001", "ts": 1750780830300, "text": "Grid red at 24,180 MW. Utility asked for 25%. We delivered 24.3%.", "refs": ["f-gridstate-001", "f-utilreq-001", "f-report-001"] }

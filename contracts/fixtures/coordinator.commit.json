@@ -1,0 +1,1 @@
+{ "type": "coordinator.commit", "id": "f-commit-001", "ts": 1750780800250, "request_id": "r-001", "committed_cut_pct": 25.0, "policy": { "gear_offset": -1, "defer_batch": true, "protect_critical": true } }

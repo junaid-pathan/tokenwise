@@ -1,0 +1,1 @@
+{ "type": "answer.completed", "id": "f-answer-001", "ts": 1750780800700, "prompt_id": "p-001", "gear_used": 1, "latency_ms": 420, "output_tokens": 12, "energy_j": 3.1, "energy_source": "estimated" }

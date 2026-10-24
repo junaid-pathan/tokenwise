@@ -1,0 +1,6 @@
+#!/bin/sh
+# Blocks AI co-author / generated-with lines. See PRD Git rules.
+if grep -qiE '^(co-authored-by|generated with)' "$1"; then
+  echo "Blocked: remove Co-authored-by / Generated with lines." >&2
+  exit 1
+fi

@@ -1,0 +1,33 @@
+# internal planning doc, not shipped
+prd.md
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# node
+node_modules/
+dist/
+.vite/
+*.log
+
+# ml artifacts
+*.joblib
+training/data/*.csv
+training/data/*.jsonl
+data/grid/*.json
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

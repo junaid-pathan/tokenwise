@@ -1,0 +1,1 @@
+{ "type": "route.decided", "id": "f-route-001", "ts": 1750780800150, "prompt_id": "p-001", "gear_needed": 1, "gear_used": 1, "model": "qwen2.5:0.5b", "deferred": false, "protected": false, "reason": "green grid, triage gear kept" }

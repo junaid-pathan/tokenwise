@@ -1,0 +1,22 @@
+{
+  "_comment": "Ordered event sequence mock_stream.py replays so A and B build UIs before real agents exist. delay_ms is the pause BEFORE emitting each event.",
+  "sequence": [
+    { "delay_ms": 0,    "event": { "type": "grid.load", "load_mw": 18200.0, "replay_clock": "2025-06-24T09:00:00", "source": "replay" } },
+    { "delay_ms": 300,  "event": { "type": "grid.state", "load_mw": 18200.0, "level": "green", "replay_clock": "2025-06-24T09:00:00", "source": "replay" } },
+    { "delay_ms": 300,  "event": { "type": "prompt.received", "prompt_id": "p-001", "source": "crowd", "chars": 17, "town": "Worcester" } },
+    { "delay_ms": 100,  "event": { "type": "triage.decided", "prompt_id": "p-001", "gear_needed": 1, "confidence": 0.92, "reason": "arithmetic, short" } },
+    { "delay_ms": 100,  "event": { "type": "route.decided", "prompt_id": "p-001", "gear_needed": 1, "gear_used": 1, "model": "qwen2.5:0.5b", "deferred": false, "protected": false, "reason": "green grid" } },
+    { "delay_ms": 500,  "event": { "type": "answer.completed", "prompt_id": "p-001", "gear_used": 1, "latency_ms": 420, "output_tokens": 12, "energy_j": 3.1, "energy_source": "estimated" } },
+    { "delay_ms": 300,  "event": { "type": "power.sample", "watts": 55.0, "device": "Tesla T4", "source": "estimate" } },
+    { "delay_ms": 600,  "event": { "type": "grid.load", "load_mw": 24180.0, "replay_clock": "2025-06-24T16:00:00", "source": "replay" } },
+    { "delay_ms": 300,  "event": { "type": "grid.state", "load_mw": 24180.0, "level": "red", "replay_clock": "2025-06-24T16:00:00", "source": "replay" } },
+    { "delay_ms": 300,  "event": { "type": "utility.request", "request_id": "r-001", "cut_pct": 25.0, "duration_min": 120, "reason": "grid red for 2 samples" } },
+    { "delay_ms": 300,  "event": { "type": "coordinator.commit", "request_id": "r-001", "committed_cut_pct": 25.0, "policy": { "gear_offset": -1, "defer_batch": true, "protect_critical": true } } },
+    { "delay_ms": 300,  "event": { "type": "narrator.line", "text": "Grid red at 24,180 MW. Utility asked for 25%.", "refs": [] } },
+    { "delay_ms": 800,  "event": { "type": "power.sample", "watts": 41.0, "device": "Tesla T4", "source": "estimate" } },
+    { "delay_ms": 300,  "event": { "type": "coordinator.report", "request_id": "r-001", "achieved_cut_pct": 24.3, "joules_baseline": 1000.0, "joules_actual": 757.0 } },
+    { "delay_ms": 200,  "event": { "type": "utility.verdict", "request_id": "r-001", "accepted": true, "shortfall_pct": 0.7 } },
+    { "delay_ms": 200,  "event": { "type": "scorecard.update", "no_downshift": { "j_per_answer": 18.2, "quality_match_pct": 100.0, "p50_latency_ms": 900.0 }, "downshift": { "j_per_answer": 11.4, "quality_match_pct": 94.0, "p50_latency_ms": 520.0 } } },
+    { "delay_ms": 300,  "event": { "type": "narrator.line", "text": "Delivered 24.3%. Quality kept at 94%.", "refs": [] } }
+  ]
+}
