@@ -22,9 +22,10 @@ dist/
 
 # ml artifacts
 *.joblib
-training/data/*.csv
-training/data/*.jsonl
-data/grid/*.json
+
+# NOTE: training/data/*.csv, training/data/*.jsonl and data/grid/*.json are
+# deliverables other people need (labels, held-out prompts, replay cache), so
+# they are tracked on purpose.
 
 # os / editor
 .DS_Store
