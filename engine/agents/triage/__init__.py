@@ -164,7 +164,15 @@ def register(bus, app):
     @app.post("/v1/triage")
     async def triage(body: dict) -> dict:
         prompt = body.get("prompt", "")
-        gear, conf, reason = classify(prompt)
+        # Prefer the trained classifier (A4-full); it falls back to these rules
+        # internally if the model or its deps are unavailable.
+        try:
+            from training.model.classifier import predict
+
+            gear, conf, source = predict(prompt)
+            reason = f"classifier ({source})"
+        except Exception:
+            gear, conf, reason = classify(prompt)
         return {
             "gear": gear,
             "confidence": round(conf, 2),
