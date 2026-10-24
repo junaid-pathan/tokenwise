@@ -231,12 +231,10 @@ function Sparks({
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, POOL]} frustumCulled={false}>
       <sphereGeometry args={[1, 8, 8]} />
-      <meshStandardMaterial
-        emissive="#ffffff"
-        emissiveIntensity={2.2}
-        toneMapped={false}
-        vertexColors={false}
-      />
+      {/* Basic (unlit) material so the per-instance colour shows directly and
+          bloom picks it up. A MeshStandardMaterial with a white emissive was
+          washing every spark to white regardless of setColorAt. */}
+      <meshBasicMaterial toneMapped={false} vertexColors={false} />
     </instancedMesh>
   );
 }
