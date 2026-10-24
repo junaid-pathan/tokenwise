@@ -13,8 +13,13 @@ import time
 from pathlib import Path
 
 import httpx
+from dotenv import load_dotenv
 
 from engine.llm import GenResult
+
+# The engine is started with plain `uvicorn engine.app:app`, which does not read
+# .env, so load it here (real environment variables still win).
+load_dotenv()
 
 _GEARS_PATH = Path(__file__).resolve().parents[2] / "contracts" / "gears.json"
 
