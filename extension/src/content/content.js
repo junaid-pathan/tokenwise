@@ -72,6 +72,8 @@
   let engineLive = false;
 
   function triage(prompt) {
+    const pin = DS.demoPin(prompt);
+    if (pin) return Promise.resolve({ ...pin, source: engineLive ? "engine" : "rules" });
     return new Promise((resolve) => {
       const fallback = () => {
         engineLive = false;
@@ -325,7 +327,7 @@
     const prompt = currentPrompt();
     if ((!last || last.prompt !== prompt) && prompt.length >= 3) {
       // Sent before triage caught up: score it with the instant rules.
-      const t = DS.rulesTriage(prompt);
+      const t = DS.demoPin(prompt) || DS.rulesTriage(prompt);
       last = { prompt, gear: t.gear, model: DS.GEAR_MODEL[t.gear], current: detectModel() || DEFAULT_MODEL };
     }
     if (!last) return;
