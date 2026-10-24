@@ -278,6 +278,10 @@
   }
 
   function clearLive() {
+    // Drop any pending or in-flight triage so a late reply can't bring the
+    // old suggestion back after a send or delete.
+    clearTimeout(timer);
+    seq++;
     last = null;
     if (root) $("live").innerHTML = `<div class="empty">Start typing — I'll pick the right gear and model.</div>`;
   }
@@ -318,6 +322,12 @@
   let lastSent = { text: "", at: 0 };
 
   function recordSend() {
+    const prompt = currentPrompt();
+    if ((!last || last.prompt !== prompt) && prompt.length >= 3) {
+      // Sent before triage caught up: score it with the instant rules.
+      const t = DS.rulesTriage(prompt);
+      last = { prompt, gear: t.gear, model: DS.GEAR_MODEL[t.gear], current: detectModel() || DEFAULT_MODEL };
+    }
     if (!last) return;
     const now = Date.now();
     if (last.prompt === lastSent.text && now - lastSent.at < 3000) return;
@@ -373,7 +383,28 @@
     const c = findComposer();
     return !!(c && t && (c === t || c.contains(t)));
   };
-  document.addEventListener("input", (e) => inComposer(e.target) && onInput(), true);
+  document.addEventListener(
+    "input",
+    (e) => {
+      if (!inComposer(e.target)) return;
+      // Clearing the box by hand also drops pasted text we were holding.
+      if (/^delete/.test(e.inputType || "") && !composerText(findComposer())) pastedExtra = [];
+      onInput();
+    },
+    true
+  );
+  // Removing a pasted-content chip from the composer form drops its text too.
+  document.addEventListener(
+    "click",
+    (e) => {
+      const b = e.target.closest && e.target.closest('button[aria-label*="remove" i], button[aria-label*="delete" i]');
+      if (b && b.closest("form, fieldset")) {
+        pastedExtra = [];
+        setTimeout(onInput, 150);
+      }
+    },
+    true
+  );
   document.addEventListener("paste", (e) => inComposer(e.target) && onPaste(e), true);
   document.addEventListener("drop", (e) => inComposer(e.target) && setTimeout(onInput, 150), true);
 
@@ -382,16 +413,19 @@
   function onRoute() {
     if (location.pathname === lastPath) return;
     lastPath = location.pathname;
+    pastedExtra = [];
+    clearLive();
     if (isNewChat()) {
       chatBaseline = null;
-      pastedExtra = [];
-      clearLive();
       setOpen(true);
     }
   }
 
   function tick() {
     onRoute();
+    // claude.ai empties the composer in code after a send, often without an
+    // input event, so check the box itself and clear a stale suggestion.
+    if (last && currentPrompt().length < 3) clearLive();
     if (!chatBaseline) chatBaseline = detectModel();
   }
 
