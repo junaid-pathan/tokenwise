@@ -29,6 +29,20 @@ const prefersReducedMotion =
   typeof window !== "undefined" &&
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
+// Per-tower label placement so the close western pair does not overlap.
+// Holyoke sits just NE of Westfield (~13 mi); push Holyoke's label up-right
+// and Westfield's down-left so the two never collide. Lowell stays high/centre.
+const LABEL_PLACEMENT: Record<
+  string,
+  { pos: [number, number, number]; anchorX: "left" | "center" | "right" }
+> = {
+  Holyoke: { pos: [0.9, 2.5, -0.4], anchorX: "left" },
+  Westfield: { pos: [-0.9, 1.7, 0.5], anchorX: "right" },
+  Lowell: { pos: [0, 2.2, 0], anchorX: "center" },
+};
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
 // ---------------------------------------------------------------------------
 // Ground: one merged geometry, vertex colours lerp toward the level tint.
 // ---------------------------------------------------------------------------
@@ -93,6 +107,13 @@ function Towers({ wattsRef }: { wattsRef: React.MutableRefObject<number> }) {
     <>
       {TOWERS.map((t, i) => {
         const [x, z] = lonLatToXZ(t.lon, t.lat);
+        // Per-tower label placement so the close pair (Holyoke / Westfield,
+        // ~13 mi apart) does not collide. Holyoke anchors right+high,
+        // Westfield anchors left+low; Lowell stays centred & high.
+        const lp = LABEL_PLACEMENT[t.name] ?? {
+          pos: [0, 1.9, 0] as [number, number, number],
+          anchorX: "center" as const,
+        };
         return (
           <group key={t.name} position={[x, 0, z]}>
             <mesh
@@ -109,11 +130,24 @@ function Towers({ wattsRef }: { wattsRef: React.MutableRefObject<number> }) {
                 roughness={0.4}
               />
             </mesh>
+            {/* Leader line from the tower top to the label anchor. */}
+            <line>
+              <bufferGeometry
+                attach="geometry"
+                onUpdate={(g) =>
+                  g.setFromPoints([
+                    new THREE.Vector3(0, 1.5, 0),
+                    new THREE.Vector3(lp.pos[0], lp.pos[1], lp.pos[2]),
+                  ])
+                }
+              />
+              <lineBasicMaterial attach="material" color="#3a4a66" transparent opacity={0.6} />
+            </line>
             <Text
-              position={[0, 1.9, 0]}
+              position={lp.pos}
               fontSize={0.28}
               color="#dbe7ff"
-              anchorX="center"
+              anchorX={lp.anchorX}
               anchorY="bottom"
               outlineWidth={0.012}
               outlineColor="#06090d"
