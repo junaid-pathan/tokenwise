@@ -16,6 +16,11 @@ from typing import Optional
 
 _MODEL_PATH = Path(__file__).resolve().parent / "gear_clf.joblib"
 
+# Rules confidence at or above this comes from a keyword hit, not a length default.
+_RULES_TRUST = 0.85
+# Only for short prompts: the arithmetic rule also fires on long word problems.
+_RULES_MAX_WORDS = 10
+
 _clf = None
 _loaded = False
 
@@ -46,7 +51,17 @@ def predict(prompt: str) -> tuple[int, float, str]:
             X = featurize([prompt or ""])
             proba = clf.predict_proba(X)[0]
             gear = int(clf.classes_[proba.argmax()])
-            return gear, float(proba.max()), "model"
+            conf = float(proba.max())
+            # The model is weak on arithmetic and architecture prompts, where the
+            # rules have precise keyword hits. Trust confident rules over a less
+            # confident model; keep the model for everything else (e.g. code).
+            from engine.agents.triage import classify
+
+            r_gear, r_conf, _reason = classify(prompt or "")
+            short = len((prompt or "").split()) <= _RULES_MAX_WORDS
+            if short and r_conf >= _RULES_TRUST and r_conf > conf:
+                return r_gear, r_conf, "rules"
+            return gear, conf, "model"
         except Exception as exc:
             print(f"[classifier] predict failed ({exc}); using rules")
 
