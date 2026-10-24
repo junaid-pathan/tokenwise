@@ -97,6 +97,18 @@ def test_estimate_prefers_gears_json_when_nonnull(monkeypatch):
     assert abs(energy.estimate_joules(2, 1000) - 1800.0) < 1e-6
 
 
+def test_estimate_uses_table_when_gears_json_null(monkeypatch):
+    # With no per-1k figure (the current frozen gears.json), the table is used.
+    monkeypatch.setattr(energy, "_wh_per_1k_from_gears", lambda: {})
+    assert energy.estimate_joules(1, 64) == energy.ESTIMATE_JOULES_BY_GEAR[1]
+    assert energy.estimate_joules(5, 64) == energy.ESTIMATE_JOULES_BY_GEAR[5]
+
+
+def test_estimate_unknown_gear_falls_back_to_standard():
+    # An out-of-range gear should not raise; it defaults to the gear-3 base.
+    assert energy.estimate_joules(99, 64) == energy.ESTIMATE_JOULES_BY_GEAR[3]
+
+
 # --- rate / Poisson ---------------------------------------------------------
 
 def test_expected_per_minute_linear_in_load():
