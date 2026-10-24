@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Downshift",
+  "name": "TokenWise",
   "version": "0.2.0",
   "description": "Puts AI in the right gear. Picks the right-size Claude model for each prompt and tracks the carbon you save.",
-  "action": { "default_title": "Downshift", "default_popup": "src/panel/index.html" },
+  "action": { "default_title": "TokenWise", "default_popup": "src/panel/index.html" },
   "permissions": ["activeTab", "storage"],
   "host_permissions": [
     "https://claude.ai/*",

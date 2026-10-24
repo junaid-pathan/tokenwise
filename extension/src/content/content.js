@@ -1,4 +1,4 @@
-// A: Downshift sidebar on claude.ai.
+// A: TokenWise sidebar on claude.ai.
 // Opens on every new chat. While you type it shows the prompt's gear, the Claude
 // model that fits it, and the energy you'd save by switching. Each sent prompt
 // is added to a per-user footprint (chrome.storage.local) shown at the top as
@@ -100,112 +100,215 @@
   }
 
   // --- sidebar UI (shadow DOM so claude.ai's CSS can't leak in) ----------------
+  // Block-game theme to match B's popup panel (extension/src/panel/panel.css):
+  // dirt background, bevelled stone GUI panels, pickaxe hotbar for the gears.
   const CSS = `
+    @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&display=swap");
     :host { all: initial; }
-    * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-    .panel { position: fixed; top: 0; right: 0; height: 100vh; width: 320px; z-index: 2147483647;
-      background: #f4f7f2; color: #1c2b22; border-left: 1px solid #d5e0d2;
-      box-shadow: -8px 0 24px rgba(0,0,0,0.08); display: flex; flex-direction: column;
-      transition: transform 0.25s ease; overflow-y: auto; }
+    * { box-sizing: border-box; }
+    .panel, .tab {
+      --ink: #262626; --muted: #404040; --gui: #c6c6c6; --gui-hi: #fff; --gui-lo: #555;
+      --slot: #8b8b8b; --slot-hi: #b4b4b4; --slot-lo: #373737; --chat: rgba(0,0,0,0.62);
+      --emerald: #17a34a;
+      --pixel: "Pixelify Sans", "Segoe UI", system-ui, sans-serif;
+      --caps: "Silkscreen", "Pixelify Sans", ui-monospace, monospace;
+      font-family: var(--pixel); line-height: 1.35;
+    }
+    .panel { position: fixed; top: 0; right: 0; height: 100vh; width: 340px; z-index: 2147483647;
+      color: var(--ink); padding: 12px; overflow-y: auto; border-left: 3px solid #000;
+      background-color: #3b2a1d;
+      background-image:
+        linear-gradient(45deg, rgba(0,0,0,0.18) 25%, transparent 25% 75%, rgba(0,0,0,0.18) 75%),
+        linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25% 75%, rgba(255,255,255,0.05) 75%);
+      background-size: 8px 8px, 8px 8px; background-position: 0 0, 4px 4px;
+      box-shadow: -6px 0 0 rgba(0,0,0,0.25); transition: transform 0.25s ease; }
     .panel.closed { transform: translateX(100%); }
-    .tab { position: fixed; right: 0; top: 40%; z-index: 2147483647; background: #2f6b45; color: #fff;
-      border: none; border-radius: 10px 0 0 10px; padding: 10px 8px; cursor: pointer; font-size: 13px;
-      font-weight: 600; writing-mode: vertical-rl; display: none; }
+
+    /* Collapsed tab: a grass block on the edge */
+    .tab { position: fixed; right: 0; top: 40%; z-index: 2147483647; display: none; cursor: pointer;
+      padding: 12px 8px; writing-mode: vertical-rl; font-family: var(--caps); font-size: 12px;
+      color: #fff; text-shadow: 2px 2px 0 #2b5c18; border: 3px solid #000; border-right: 0;
+      background: #4c9a2f; box-shadow: inset 3px 3px 0 #86d36a, inset -3px -3px 0 #2b5c18; }
     .tab.show { display: block; }
-    .tab:focus-visible, button:focus-visible { outline: 2px solid #1c2b22; outline-offset: 2px; }
-    header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; }
-    .brand { font-weight: 700; font-size: 15px; color: #2f6b45; }
-    .close { background: none; border: none; font-size: 20px; color: #5b6b60; cursor: pointer; line-height: 1; }
-    .impact { margin: 0 12px; padding: 14px; border-radius: 14px; background: #2f6b45; color: #fff; }
-    .impact .big { font-size: 26px; font-weight: 700; line-height: 1.1; }
-    .impact .sub { font-size: 12px; opacity: 0.9; margin-top: 2px; }
-    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
-    .stat { background: rgba(255,255,255,0.14); border-radius: 10px; padding: 8px 6px; text-align: center; }
-    .stat b { display: block; font-size: 15px; }
-    .stat span { font-size: 10.5px; opacity: 0.9; }
-    .flash { font-size: 12px; font-weight: 600; color: #d9f99d; height: 16px; margin-top: 6px; }
-    .card { margin: 12px; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid #dfe7dc; }
-    .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #5b6b60; }
-    .gears { display: flex; gap: 6px; margin: 8px 0 4px; }
-    .g { flex: 1; text-align: center; padding: 6px 0; border-radius: 8px; font-size: 11px; font-weight: 600;
-      background: #eef2ec; color: #7a877e; border: 2px solid transparent; }
-    .g.on { color: #1c2b22; border-color: #1c2b22; }
-    .model { font-size: 22px; font-weight: 700; margin-top: 8px; }
-    .reason { font-size: 12px; color: #5b6b60; margin-top: 2px; }
-    .advice { margin-top: 12px; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.4; }
-    .advice.save { background: #ecfccb; color: #365314; }
-    .advice.ok { background: #e7f5ec; color: #1f5135; }
-    .advice.up { background: #fff4e5; color: #7c3f00; }
-    .empty { font-size: 13px; color: #5b6b60; }
-    .rows { font-size: 12.5px; }
-    .rows div { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #e3e9e1; }
-    .rows div:last-child { border-bottom: none; }
-    footer { margin: auto 12px 12px; font-size: 10.5px; color: #6b7a70; line-height: 1.4; }
-    .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-    .tight[hidden], .ask[hidden], .askout[hidden], .apply[hidden] { display: none; }
-    .ask { border: 2px solid #22c55e; }
-    .asksub { font-size: 12.5px; color: #3c4a40; margin-top: 4px; }
-    .askout { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: #f4f7f2; font-size: 13px;
-      line-height: 1.45; white-space: pre-wrap; max-height: 260px; overflow-y: auto; }
-    .askmeta { font-size: 11px; color: #5b6b60; margin-top: 6px; }
-    .apply:disabled { opacity: 0.6; cursor: progress; }
-    .tnum { font-size: 16px; font-weight: 700; margin-top: 6px; color: #2f6b45; }
-    .tfix { font-size: 11.5px; color: #5b6b60; margin-top: 2px; }
-    .tprev { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #f4f7f2; font-size: 12.5px;
-      white-space: pre-wrap; max-height: 120px; overflow-y: auto; border: 1px dashed #c9d6c5; }
-    .apply { margin-top: 10px; width: 100%; padding: 8px; border: none; border-radius: 8px; background: #2f6b45;
-      color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
-    .apply:hover { background: #255838; }
-    .reset { background: none; border: none; color: #6b7a70; text-decoration: underline; cursor: pointer; font-size: 10.5px; padding: 0; }
+
+    button:focus-visible, .tab:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+    /* Top bar */
+    header { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+    .grass { width: 32px; height: 32px; flex: 0 0 auto; border: 3px solid #000;
+      background: linear-gradient(#5ea73a 0 35%, transparent 35%),
+        repeating-linear-gradient(90deg, #86592f 0 4px, #79502a 4px 8px);
+      box-shadow: inset 3px 3px 0 rgba(255,255,255,0.25), inset -3px -3px 0 rgba(0,0,0,0.3); }
+    .brand { flex: 1; min-width: 0; }
+    h1 { font-family: var(--caps); font-size: 19px; font-weight: 700; margin: 0; line-height: 1;
+      color: #e0e0e0; letter-spacing: 1px; text-shadow: 2px 2px 0 #3f3f3f, 3px 3px 0 #1a1a1a; }
+    .kicker { font-size: 12px; color: #d9c7a5; }
+    .close { font-family: var(--caps); font-size: 13px; color: #fff; cursor: pointer; width: 30px; height: 30px;
+      background: #6f6f6f; border: 3px solid #000; text-shadow: 1px 1px 0 #3a3a3a;
+      box-shadow: inset 2px 2px 0 #a8a8a8, inset -2px -2px 0 #3c3c3c; }
+    .close:hover { background: #7f86c9; }
+
+    /* Bevelled GUI panel */
+    .gui { background: var(--gui); border: 3px solid #000; padding: 12px 13px; margin-bottom: 12px;
+      box-shadow: inset 3px 3px 0 var(--gui-hi), inset -3px -3px 0 var(--gui-lo); }
+    .gui[hidden], .askout[hidden], .btn[hidden] { display: none; }
+    h2 { font-family: var(--caps); font-size: 11px; font-weight: 700; margin: 0 0 8px;
+      color: #3f3f3f; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* Impact: big tree count + inventory slots */
+    .big { font-family: var(--caps); font-size: 24px; font-weight: 700; line-height: 1.1; color: #1f6b1a;
+      text-shadow: 1px 1px 0 #fff; }
+    .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 10px;
+      padding: 4px; background: #2b2b2b; border: 3px solid #000; }
+    .slots.two { grid-template-columns: 1fr 1fr; }
+    .slot { background: var(--slot); padding: 6px 4px; text-align: center; color: #fff; text-shadow: 1px 1px 0 #333;
+      box-shadow: inset 3px 3px 0 var(--slot-lo), inset -3px -3px 0 var(--slot-hi); }
+    .slot b { display: block; font-size: 14px; font-variant-numeric: tabular-nums; }
+    .slot span { font-size: 10.5px; color: #eee; }
+    .slot.green { background: var(--emerald); box-shadow: inset 3px 3px 0 #0b5e2a, inset -3px -3px 0 #4ade80; }
+
+    /* Chat lines (flash + status) */
+    .chat { background: var(--chat); color: #fff; padding: 7px 10px; margin-bottom: 12px; font-size: 13px;
+      text-shadow: 1px 1px 0 #000; min-height: 1.4em; }
+    .chat:empty { display: none; }
+
+    /* Pickaxe hotbar for the five gears */
+    .hotbar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 4px;
+      background: #2b2b2b; border: 3px solid #000; margin-bottom: 12px; }
+    .tool { display: flex; flex-direction: column; align-items: center; padding: 4px 0 3px;
+      background: var(--slot); box-shadow: inset 3px 3px 0 var(--slot-lo), inset -3px -3px 0 var(--slot-hi); }
+    .tool .n { align-self: flex-start; margin: -2px 0 -8px 4px; font-family: var(--caps); font-size: 9px;
+      color: #fff; text-shadow: 1px 1px 0 #000; }
+    .tool .nm { font-size: 9px; font-weight: 700; color: #fff; text-shadow: 1px 1px 0 #333; }
+    .tool.on { background: #c6c6c6; box-shadow: 0 0 0 3px #fff, 0 0 0 6px #000,
+      inset 3px 3px 0 var(--slot-lo), inset -3px -3px 0 var(--slot-hi); position: relative; z-index: 1; }
+    .tool.on .nm { color: #000; text-shadow: none; }
+    .pick { width: 32px; height: 32px; shape-rendering: crispEdges; }
+    .pk-dark { fill: var(--head-dark); } .pk-light { fill: var(--head); }
+    .pk-stick { fill: #8a6a3b; } .pk-stick2 { fill: #5b4325; }
+    .t1 { --head: #c49a5c; --head-dark: #6b4f2a; --tier: #e3bf86; }
+    .t2 { --head: #a3a3a3; --head-dark: #4f4f4f; --tier: #d6d6d6; }
+    .t3 { --head: #f0f0f0; --head-dark: #8c8c8c; --tier: #ffffff; }
+    .t4 { --head: #6af0e2; --head-dark: #178a83; --tier: #55ffff; }
+    .t5 { --head: #6e6266; --head-dark: #2b2426; --tier: #d6a6ff; }
+
+    /* Tooltip-style verdict under the hotbar */
+    .tip { background: #100010; border: 3px solid #2a0a5c; padding: 9px 11px; color: #e6e6e6;
+      text-shadow: 2px 2px 0 #2b2b2b; }
+    .tip .tt { font-size: 15px; font-weight: 700; color: var(--tier); }
+    .model { font-family: var(--caps); font-size: 15px; font-weight: 700; color: #fff; margin-top: 4px; }
+    .reason { font-size: 12px; color: #a8a8ff; margin-top: 2px; }
+    .pips { display: flex; gap: 3px; align-items: center; margin-top: 5px; }
+    .pips::before { content: "Energy"; font-size: 11px; color: #a8a8a8; margin-right: 4px; }
+    .pips i { width: 14px; height: 8px; background: #3a3a3a; border: 1px solid #000; }
+    .pips i.on { background: #ffcf3f; }
+
+    .advice { margin-top: 10px; padding: 9px 11px; font-size: 13.5px; line-height: 1.4; border: 3px solid #000; }
+    .advice.save { background: var(--emerald); color: #fff; text-shadow: 1px 1px 0 #0b5e2a;
+      box-shadow: inset 3px 3px 0 #4ade80, inset -3px -3px 0 #0b5e2a; }
+    .advice.ok { background: #4c9a2f; color: #fff; text-shadow: 1px 1px 0 #2b5c18;
+      box-shadow: inset 3px 3px 0 #86d36a, inset -3px -3px 0 #2b5c18; }
+    .advice.up { background: #212121; color: #ffe08a; box-shadow: inset 2px 2px 0 #555, inset -2px -2px 0 #0d0d0d; }
+    .empty { font-size: 13.5px; color: var(--muted); }
+
+    /* Buttons */
+    .btn { display: block; width: 100%; margin-top: 10px; font-family: var(--pixel); font-size: 15px; font-weight: 700;
+      color: #fff; text-shadow: 2px 2px 0 #2b5c18; background: #4c9a2f; border: 3px solid #000; padding: 7px 14px;
+      cursor: pointer; box-shadow: inset 3px 3px 0 #86d36a, inset -3px -3px 0 #2b5c18; }
+    .btn:hover { background: #5cb239; }
+    .btn:active { box-shadow: inset -3px -3px 0 #86d36a, inset 3px 3px 0 #2b5c18; }
+    .btn:disabled { opacity: 0.65; cursor: progress; }
+    .btn.small { display: inline-block; width: auto; font-size: 12px; padding: 3px 10px; margin-top: 8px;
+      background: #6f6f6f; text-shadow: 1px 1px 0 #3a3a3a; box-shadow: inset 2px 2px 0 #a8a8a8, inset -2px -2px 0 #3c3c3c; }
+
+    /* Ask here: book page for the answer */
+    .asksub { font-size: 13px; color: var(--muted); }
+    .askout { margin-top: 10px; white-space: pre-wrap; background: #f4e7c5; color: #2b2111; border: 3px solid #000;
+      box-shadow: inset 3px 3px 0 #fff6dc, inset -3px -3px 0 #c9b27c; padding: 10px 12px; font-size: 14px;
+      max-height: 260px; overflow-y: auto; }
+    .askmeta { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+    /* Tighten: chat-bar preview */
+    .tnum { font-family: var(--caps); font-size: 14px; font-weight: 700; color: #1f6b1a; }
+    .tfix { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .tprev { margin-top: 8px; background: var(--chat); color: #fff; text-shadow: 1px 1px 0 #000; border: 2px solid #000;
+      padding: 8px 10px; font-size: 13.5px; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
+    .tprev::before { content: "> "; color: #7ee36b; font-weight: 700; }
+
+    /* Footer */
+    footer { font-size: 11px; color: #d9c7a5; line-height: 1.4; }
+    footer .chat { margin-bottom: 8px; font-size: 12px; }
+    .dot { display: inline-block; width: 9px; height: 9px; border: 2px solid #000; margin-right: 6px; vertical-align: -1px; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   `;
 
+  // One pixel-art pickaxe (same art as the popup), recoloured per gear tier.
+  const PICK = `
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <symbol id="ds-pick" viewBox="0 0 16 16">
+        <path class="pk-dark" d="M3 1h4v1h-4zM3 2h1v1h-1zM7 2h2v1h-2zM3 3h3v1h-3zM9 3h1v1h-1zM6 4h2v1h-2zM10 4h1v1h-1zM8 5h1v1h-1zM11 5h1v1h-1zM9 6h1v1h-1zM12 6h1v1h-1zM10 7h1v1h-1zM13 7h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM11 9h1v1h-1zM14 9h1v3h-1zM12 10h1v2h-1zM12 12h3v1h-3z" />
+        <path class="pk-light" d="M4 2h3v1h-3zM6 3h3v1h-3zM8 4h2v1h-2zM9 5h2v1h-2zM10 6h2v1h-2zM11 7h2v1h-2zM12 8h1v1h-1zM12 9h2v1h-2zM13 10h1v2h-1z" />
+        <path class="pk-stick" d="M12 3h1v1h-1zM8 7h1v1h-1zM6 9h1v1h-1zM4 11h1v1h-1zM2 13h1v1h-1z" />
+        <path class="pk-stick2" d="M11 4h1v1h-1zM7 8h1v1h-1zM5 10h1v1h-1zM3 12h1v1h-1zM1 14h1v1h-1z" />
+      </symbol>
+    </svg>`;
+
+  const EMPTY = `<div class="empty">Start typing. I'll pick the right tool and model.</div>`;
+
   const HTML = `
-    <button class="tab" aria-label="Open Downshift">🌱 Downshift</button>
-    <aside class="panel closed" role="complementary" aria-label="Downshift">
-      <header><div class="brand">🌱 Downshift</div>
-        <button class="close" aria-label="Close Downshift">×</button></header>
-      <section class="impact" aria-label="Your impact">
+    ${PICK}
+    <button class="tab" aria-label="Open TokenWise">TokenWise</button>
+    <aside class="panel closed" role="complementary" aria-label="TokenWise">
+      <header>
+        <span class="grass" aria-hidden="true"></span>
+        <div class="brand"><h1>TokenWise</h1><span class="kicker">Right tool, less power</span></div>
+        <button class="close" aria-label="Close TokenWise">X</button>
+      </header>
+      <section class="gui" aria-label="Your impact">
+        <h2>Your impact</h2>
         <div class="big" data-k="tree">0 tree-min</div>
         <div class="sub">of a tree's CO₂ absorption saved, all time</div>
-        <div class="grid3">
-          <div class="stat"><b data-k="co2">0 g</b><span>CO₂ avoided</span></div>
-          <div class="stat"><b data-k="o2">0 g</b><span>O₂ equiv.</span></div>
-          <div class="stat"><b data-k="wh">0 Wh</b><span>energy saved</span></div>
+        <div class="slots">
+          <div class="slot green"><b data-k="co2">0 g</b><span>CO₂ avoided</span></div>
+          <div class="slot"><b data-k="o2">0 g</b><span>O₂ equiv.</span></div>
+          <div class="slot"><b data-k="wh">0 Wh</b><span>energy saved</span></div>
         </div>
-        <div class="flash" data-k="flash" aria-live="polite"></div>
       </section>
-      <section class="card" aria-label="This prompt">
-        <div class="label">This prompt</div>
-        <div data-k="live"><div class="empty">Start typing — I'll pick the right gear and model.</div></div>
+      <div class="chat" data-k="flash" aria-live="polite"></div>
+      <section class="gui" aria-label="This prompt">
+        <h2>This prompt</h2>
+        <div data-k="live">${EMPTY}</div>
       </section>
-      <section class="card ask" aria-label="Ask here instead" data-k="ask" hidden>
-        <div class="label">⚡ Ask here instead</div>
-        <div class="asksub" data-k="asksub">Simple enough for a small model — skip Claude and answer it here.</div>
-        <button class="apply" data-k="askbtn">Ask here</button>
+      <section class="gui ask" aria-label="Ask here instead" data-k="ask" hidden>
+        <h2>⚡ Ask here instead</h2>
+        <div class="asksub" data-k="asksub">Simple enough for a small model. Skip Claude and answer it here.</div>
+        <button class="btn" data-k="askbtn">Ask here</button>
         <div class="askout" data-k="askout" aria-live="polite" hidden></div>
         <div class="askmeta" data-k="askmeta"></div>
       </section>
-      <section class="card tight" aria-label="Tighten your prompt" data-k="tight" hidden>
-        <div class="label">✂️ Tighten · fewer tokens</div>
+      <section class="gui tight" aria-label="Tighten your prompt" data-k="tight" hidden>
+        <h2>✂ Tighten · fewer tokens</h2>
         <div class="tnum" data-k="tnum"></div>
         <div class="tfix" data-k="tfix"></div>
         <div class="tprev" data-k="tprev"></div>
-        <button class="apply" data-k="apply">Apply</button>
+        <button class="btn" data-k="apply">Apply</button>
       </section>
-      <section class="card" aria-label="Your footprint">
-        <div class="label">Your footprint</div>
-        <div class="rows">
-          <div><span>Prompts tracked</span><b data-k="prompts">0</b></div>
-          <div><span>Sent on the right-size model</span><b data-k="right">–</b></div>
-          <div><span>Energy used</span><b data-k="used">0 Wh</b></div>
-          <div><span>CO₂ emitted</span><b data-k="emitted">0 g</b></div>
+      <section class="gui" aria-label="Your footprint">
+        <h2>Your footprint</h2>
+        <div class="slots two">
+          <div class="slot"><b data-k="prompts">0</b><span>prompts tracked</span></div>
+          <div class="slot green"><b data-k="right">–</b><span>right-sized</span></div>
+          <div class="slot"><b data-k="used">0 Wh</b><span>energy used</span></div>
+          <div class="slot"><b data-k="emitted">0 g</b><span>CO₂ emitted</span></div>
         </div>
       </section>
       <footer>
-        <div><span class="dot" data-k="dot"></span><span data-k="engine">Checking engine…</span></div>
-        <div style="margin-top:6px">Estimates: per-answer energy scaled from a 0.24 Wh median prompt by
-        relative model price; New England grid ≈ ${DS.G_CO2_PER_WH} g CO₂/Wh; a tree absorbs ≈ 22 kg CO₂/yr.</div>
-        <button class="reset" data-k="reset">Reset my stats</button>
+        <div class="chat"><span class="dot" data-k="dot"></span><span data-k="engine">Checking engine…</span></div>
+        <div>Estimates: per-answer energy scaled from a 0.24 Wh median prompt by relative model price;
+        New England grid ≈ ${DS.G_CO2_PER_WH} g CO₂/Wh; a tree absorbs ≈ 22 kg CO₂/yr.</div>
+        <button class="btn small" data-k="reset">Reset my stats</button>
       </footer>
     </aside>`;
 
@@ -262,10 +365,11 @@
 
   function renderEngine() {
     $("dot").style.background = engineLive ? "#22c55e" : "#eab308";
-    $("engine").textContent = engineLive ? "Classifier: Downshift engine (live)" : "Classifier: offline rules";
+    $("engine").textContent = engineLive ? "Classifier: TokenWise engine (live)" : "Classifier: offline rules";
   }
 
   // --- live recommendation ---------------------------------------------------------
+  const TIERS = { 1: "Wooden", 2: "Stone", 3: "Iron", 4: "Diamond", 5: "Netherite" };
   let last = null; // { prompt, gear, model, current }
 
   function renderLive(t, prompt) {
@@ -276,11 +380,14 @@
 
     const gears = [1, 2, 3, 4, 5]
       .map((n) => {
-        const on = n === t.gear;
-        const style = on ? ` style="background:${DS.GEARS[n].color}33"` : "";
-        return `<div class="g${on ? " on" : ""}"${style} aria-current="${on}">${n}<br>${DS.GEARS[n].label}</div>`;
+        const on = n === t.gear ? " on" : "";
+        return `<div class="tool t${n}${on}" role="listitem" aria-current="${!!on}">
+          <span class="n" aria-hidden="true">${n}</span>
+          <svg class="pick" aria-hidden="true" focusable="false"><use href="#ds-pick" /></svg>
+          <span class="nm">${TIERS[n]}</span></div>`;
       })
       .join("");
+    const pips = [1, 2, 3, 4, 5].map((n) => `<i${n <= t.gear ? ' class="on"' : ""}></i>`).join("");
 
     let advice;
     const diff = DS.WH_PER_ANSWER[current] - DS.WH_PER_ANSWER[rec];
@@ -292,14 +399,18 @@
     } else if (diff < 0) {
       advice = `<div class="advice up">You're on <b>${current}</b>. This one may need <b>${rec}</b> for a good answer.</div>`;
     } else {
-      advice = `<div class="advice ok">You're on <b>${current}</b> — right gear for this prompt. 👍</div>`;
+      advice = `<div class="advice ok">You're on <b>${current}</b> — right tool for this prompt. 👍</div>`;
     }
 
     const live = $("live");
     live.innerHTML = `
-      <div class="gears" role="list" aria-label="Gear ${t.gear} of 5">${gears}</div>
-      <div class="model">Best fit: Claude ${rec}</div>
-      <div class="reason">Gear ${t.gear} · ${g.label} · ${Math.round(t.confidence * 100)}% sure</div>
+      <div class="hotbar" role="list" aria-label="Gear ${t.gear} of 5">${gears}</div>
+      <div class="tip t${t.gear}">
+        <div class="tt">${TIERS[t.gear]} Pickaxe</div>
+        <div class="model">Best fit: Claude ${rec}</div>
+        <div class="reason">Gear ${t.gear} · ${g.label} · ${Math.round(t.confidence * 100)}% sure</div>
+        <div class="pips" aria-hidden="true">${pips}</div>
+      </div>
       ${advice}`;
     // reason comes from the engine; set as text, never HTML
     const why = document.createElement("div");
@@ -380,7 +491,7 @@
         askState = "idle";
         btn.disabled = false;
         btn.textContent = "Ask here";
-        $("askmeta").textContent = "Couldn't reach the Downshift engine on localhost:8000. Start it, or send this to Claude.";
+        $("askmeta").textContent = "Couldn't reach the TokenWise engine on localhost:8000. Start it, or send this to Claude.";
         return;
       }
       text = r.text;
@@ -459,7 +570,7 @@
     clearTimeout(timer);
     seq++;
     last = null;
-    if (root) $("live").innerHTML = `<div class="empty">Start typing — I'll pick the right gear and model.</div>`;
+    if (root) $("live").innerHTML = EMPTY;
   }
 
   // claude.ai turns long pastes into a "Pasted content" attachment instead of
