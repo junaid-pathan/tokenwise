@@ -1,0 +1,22 @@
+{
+  "label_source": "haiku",
+  "bedrock_model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "region": "us-east-2",
+  "converse_calls": 100,
+  "relabelled_by_haiku": 1994,
+  "kept_heuristic": 0,
+  "heldout_gear_dist": {
+    "1": 62,
+    "2": 66,
+    "3": 61,
+    "4": 9,
+    "5": 2
+  },
+  "train_gear_dist": {
+    "1": 570,
+    "2": 709,
+    "3": 422,
+    "4": 85,
+    "5": 8
+  }
+}
