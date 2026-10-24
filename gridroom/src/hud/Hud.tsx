@@ -142,6 +142,60 @@ function Scorecard({ events }: { events: DownshiftEvent[] }) {
   );
 }
 
+function NarratorTicker({ events }: { events: DownshiftEvent[] }) {
+  const line = last(events, "narrator.line");
+  if (!line) return null;
+  return (
+    <div style={{ ...PANEL, borderLeft: "3px solid #38bdf8" }}>
+      <div style={{ color: "#8b949e", textTransform: "uppercase", fontSize: 11 }}>
+        Narrator
+      </div>
+      <div style={{ fontStyle: "italic" }}>{line.text}</div>
+    </div>
+  );
+}
+
+function NegotiationLog({ events }: { events: DownshiftEvent[] }) {
+  const kinds = new Set([
+    "utility.request",
+    "coordinator.commit",
+    "coordinator.report",
+    "utility.verdict",
+  ]);
+  const log = events.filter((e) => kinds.has(e.type)).slice(-5);
+  if (log.length === 0) return null;
+
+  const describe = (e: DownshiftEvent): string => {
+    switch (e.type) {
+      case "utility.request":
+        return `Utility asks for ${e.cut_pct}% for ${e.duration_min} min`;
+      case "coordinator.commit":
+        return `Coordinator commits ${e.committed_cut_pct}%`;
+      case "coordinator.report":
+        return `Report: ${e.achieved_cut_pct}% achieved`;
+      case "utility.verdict":
+        return e.accepted
+          ? `Verdict: accepted (${e.shortfall_pct} pt short)`
+          : `Verdict: rejected (${e.shortfall_pct} pt short)`;
+      default:
+        return e.type;
+    }
+  };
+
+  return (
+    <div style={PANEL}>
+      <div style={{ color: "#8b949e", textTransform: "uppercase", fontSize: 11 }}>
+        Negotiation
+      </div>
+      {log.map((e) => (
+        <div key={e.id} style={{ fontSize: 12 }}>
+          · {describe(e)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Hud({
   events,
   connected,
@@ -160,6 +214,8 @@ export default function Hud({
       <Wattmeter events={events} />
       <LoadCurve events={events} />
       <Scorecard events={events} />
+      <NegotiationLog events={events} />
+      <NarratorTicker events={events} />
     </div>
   );
 }
