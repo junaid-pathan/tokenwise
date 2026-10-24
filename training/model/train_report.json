@@ -1,0 +1,7 @@
+{
+  "n": 1794,
+  "exact_acc": 0.592,
+  "within_one_acc": 0.8874,
+  "target_within_one": 0.85,
+  "passes_target": true
+}
