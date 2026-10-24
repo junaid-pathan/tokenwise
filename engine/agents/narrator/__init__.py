@@ -63,6 +63,8 @@ class NarratorAgent:
         self._drainer: Optional[asyncio.Task] = None
         self._stopped = False
         self._budget = llm_line.LlmBudget()
+        # Injectable Bedrock converse() for tests; None -> use the real client.
+        self.converse = None
         # For tests/inspection: every line published, as (text, refs).
         self.published: list[dict] = []
 
@@ -128,7 +130,7 @@ class NarratorAgent:
 
         numbers = guard.extract_numbers(template)
         self._budget.spend()
-        candidate = await llm_line.phrase_line(template, numbers)
+        candidate = await llm_line.phrase_line(template, numbers, converse=self.converse)
         if candidate and guard.line_ok(candidate, events):
             return candidate
         return template
