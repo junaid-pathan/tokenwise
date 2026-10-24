@@ -204,7 +204,7 @@ function renderAnswer(data) {
   err.hidden = true;
 
   const gear = GEARS.find((g) => g.gear === data.gear_used);
-  const gearName = gear ? `${gear.user_sees} (Gear ${gear.gear})` : `Gear ${data.gear_used}`;
+  const gearName = gear ? `${gear.tier} pickaxe · Gear ${gear.gear}` : `Gear ${data.gear_used}`;
 
   textEl.textContent = data.text || "(no text)";
   meta.innerHTML = "";
