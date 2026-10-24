@@ -14,6 +14,7 @@
     5: "#ef4444",
   };
   const DEBOUNCE_MS = 400;
+  let lastGear = null; // most recent triage result, handed to the panel on click
 
   // Composer selectors for the supported sites (first match wins).
   const COMPOSER_SELECTORS = [
@@ -61,9 +62,15 @@
         padding: "6px 10px",
         borderRadius: "999px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        pointerEvents: "none",
+        pointerEvents: "auto",
+        cursor: "pointer",
         transition: "opacity 0.2s, background 0.2s",
         opacity: "0",
+      });
+      badge.addEventListener("click", () => {
+        const el = findComposer();
+        const prompt = composerText(el);
+        if (prompt.length >= 3) handOff(prompt, lastGear);
       });
       document.body.appendChild(badge);
     }
@@ -72,10 +79,30 @@
 
   function showGear(r) {
     const badge = ensureBadge();
-    badge.textContent = `Gear ${r.gear} · ${r.label}`;
+    badge.textContent = `Gear ${r.gear} · ${r.label} — open panel`;
     badge.style.background = GEAR_COLORS[r.gear] || "#8b949e";
     badge.title = r.reason || "";
     badge.style.opacity = "1";
+    lastGear = r;
+  }
+
+  // Hand the current prompt + suggested gear to B's side panel. Matches the
+  // contract in extension/src/panel/handoff.mjs: a storage key the panel reads
+  // on open, plus a runtime message if the panel is already open. The panel's
+  // Ask button then calls /v1/answer, which routes it (prompt.received ->
+  // Triage -> Coordinator -> route.decided) and sparks the Grid Room.
+  function handOff(prompt, r) {
+    const payload = { prompt, gear_suggested: r ? r.label : undefined, ts: Date.now() };
+    try {
+      chrome.storage?.local?.set({ downshift_pending: payload });
+    } catch (e) {
+      /* storage may be unavailable in some contexts */
+    }
+    try {
+      chrome.runtime?.sendMessage({ type: "downshift.open", ...payload });
+    } catch (e) {
+      /* no receiver (panel closed) is fine — storage carries it on next open */
+    }
   }
 
   let timer = null;
