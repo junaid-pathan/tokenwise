@@ -206,7 +206,7 @@ class CrowdSim:
             try:
                 result = await asyncio.wait_for(
                     asyncio.to_thread(realgen.generate_real, gear_used, hp.prompt),
-                    timeout=realgen.REAL_MAX_TOKENS,  # seconds budget, short
+                    timeout=realgen.REAL_TIMEOUT_S,  # short seconds budget
                 )
             except Exception:
                 result = realgen.RealResult(

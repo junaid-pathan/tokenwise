@@ -32,6 +32,11 @@ REAL_GEARS = (1, 2, 3, 4)
 # Max output tokens for a real demo generation (short replies).
 REAL_MAX_TOKENS = 64
 
+# Wall-clock budget (seconds) for one real generation before the caller gives up
+# and falls back to the estimate. Kept short so a dead tunnel never stalls the
+# loop for long; engine.llm.ollama has its own httpx timeout underneath this.
+REAL_TIMEOUT_S = 8.0
+
 
 @dataclass(frozen=True)
 class RealResult:
