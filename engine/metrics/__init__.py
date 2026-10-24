@@ -25,7 +25,10 @@ import statistics
 _GEAR_COST = {1: 1.0, 2: 2.0, 3: 4.0, 4: 9.0, 5: 20.0}
 
 # Placeholder kept-quality for the downshift side until A12 measures it.
+# TODO(A12): replace _DOWNSHIFT_QUALITY_PCT with the real quality-eval number.
 _DOWNSHIFT_QUALITY_PCT = 94.0
+
+__all__ = ["register"]
 
 
 def _p50(values: list[float]) -> float:
