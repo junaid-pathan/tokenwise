@@ -213,6 +213,32 @@ async def test_real_generation_success_reports_real(monkeypatch):
     assert sim.stats["real_ok"] == 1
 
 
+async def test_measured_energy_used_when_meter_covers(monkeypatch):
+    """On a real success with a live meter reporting 'measured', report it."""
+    bus = FakeBus()
+    sim = _sim(bus)
+    bus.subscribe("route.decided", sim.on_route_decided)
+    from sim.crowd import realgen
+    import engine.power as power
+
+    monkeypatch.setattr(
+        realgen, "generate_real",
+        lambda g, p, max_tokens=64: realgen.RealResult(ok=True, latency_ms=55,
+                                                       output_tokens=30, model="m"),
+    )
+    monkeypatch.setattr(power, "energy_between", lambda t0, t1: (777.0, "measured"))
+
+    await sim._emit_one()
+    pid = "crowd-1"
+    sim._pending_real.add(pid)
+    await bus.publish({"type": "route.decided", "prompt_id": pid, "gear_used": 2,
+                       "gear_needed": 2, "model": "m", "reason": "r"})
+    await _drain()
+    a = bus.of("answer.completed")[0]
+    assert a["energy_source"] == "measured"
+    assert a["energy_j"] == 777.0
+
+
 # --- bounded memory ---------------------------------------------------------
 
 async def test_bounded_inflight_emissions():
