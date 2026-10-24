@@ -185,12 +185,13 @@ function Sparks({
     const mesh = meshRef.current;
     if (!mesh) return;
 
-    // Drain the queue into free slots.
+    // Drain the queue into free slots (ring buffer by cursor).
     const q = sparkQueueRef.current;
     while (q.length > 0) {
       const item = q.shift()!;
-      const slot = states[cursor.current];
+      const idx = cursor.current;
       cursor.current = (cursor.current + 1) % POOL;
+      const slot = states[idx];
       slot.active = true;
       slot.start = item.start;
       slot.end = item.end;
@@ -198,7 +199,7 @@ function Sparks({
       slot.color.set(item.color);
       // Reduced motion: drop the spark straight at the tower, brief marker.
       slot.t = prefersReducedMotion ? 0.92 : 0;
-      mesh.setColorAt(cursor.current === 0 ? POOL - 1 : cursor.current - 1, slot.color);
+      mesh.setColorAt(idx, slot.color);
     }
 
     let anyActive = false;
