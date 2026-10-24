@@ -14,7 +14,16 @@
 
     <header class="topbar">
       <div class="brand">
-        <h1>Downshift</h1>
+        <!-- H-pattern shift gate with the knob in a low gear. Decorative. -->
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect x="1.5" y="1.5" width="29" height="29" rx="7" class="mark-bg" />
+          <path d="M9 8v16M16 8v16M23 8v16M9 16h14" class="mark-gate" />
+          <circle cx="23" cy="22" r="4" class="mark-knob" />
+        </svg>
+        <div>
+          <h1>Downshift</h1>
+          <span class="kicker">Grid-aware AI</span>
+        </div>
       </div>
       <div
         id="grid-light"
@@ -23,8 +32,10 @@
         aria-label="Grid status: connecting"
       >
         <span class="dot" aria-hidden="true"></span>
-        <span class="grid-word" id="grid-word">Connecting</span>
-        <span class="grid-load" id="grid-load"></span>
+        <span class="grid-text">
+          <span class="grid-word" id="grid-word">Connecting</span>
+          <span class="grid-load" id="grid-load"></span>
+        </span>
       </div>
     </header>
 
@@ -37,87 +48,107 @@
     </section>
 
     <!-- Hero: H-pattern gear shifter as a radio group. -->
-    <section class="card shifter" aria-labelledby="shifter-h2">
-      <h2 id="shifter-h2">Gear</h2>
-      <div
-        id="shifter"
-        class="shifter-grid"
-        role="radiogroup"
-        aria-label="Gear shifter. Use arrow keys to change gear."
-      >
-        <button type="button" class="gear auto" role="radio" data-pos="auto" aria-checked="true">
-          <span class="name">Auto</span>
-          <span class="num">Picks the gear for you</span>
-        </button>
-        <button type="button" class="gear g1" role="radio" data-pos="1" aria-checked="false">
-          <span class="name">Quick</span>
-          <span class="num">Gear 1</span>
-          <span class="desc">a fact, a sum, a one-line rewrite</span>
-        </button>
-        <button type="button" class="gear g2" role="radio" data-pos="2" aria-checked="false">
-          <span class="name">Light</span>
-          <span class="num">Gear 2</span>
-          <span class="desc">short explanation, summarize, extract</span>
-        </button>
-        <button type="button" class="gear g3" role="radio" data-pos="3" aria-checked="false">
-          <span class="name">Standard</span>
-          <span class="num">Gear 3</span>
-          <span class="desc">multi-paragraph writing, simple code</span>
-        </button>
-        <button type="button" class="gear g4" role="radio" data-pos="4" aria-checked="false">
-          <span class="name">Heavy</span>
-          <span class="num">Gear 4</span>
-          <span class="desc">multi-step reasoning, real code</span>
-        </button>
-        <button type="button" class="gear g5" role="radio" data-pos="5" aria-checked="false">
-          <span class="name">Max</span>
-          <span class="num">Gear 5</span>
-          <span class="desc">hard math, architecture, long writing</span>
-        </button>
+    <section class="card window shifter" aria-labelledby="shifter-h2">
+      <div class="titlebar">
+        <h2 id="shifter-h2">Gear</h2>
+        <span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span>
       </div>
-      <p class="shifter-help">
-        Lighter gears use less energy. When the grid is busy, shift down.
-      </p>
+      <div class="window-body">
+        <div
+          id="shifter"
+          class="shifter-grid"
+          role="radiogroup"
+          aria-label="Gear shifter. Use arrow keys to change gear."
+        >
+          <button type="button" class="gear auto" role="radio" data-pos="auto" aria-checked="true">
+            <span class="name">Auto</span>
+            <span class="num">Picks the gear for you</span>
+          </button>
+          <button type="button" class="gear g1" role="radio" data-pos="1" aria-checked="false">
+            <span class="num">Gear 1</span>
+            <span class="name">Quick</span>
+            <span class="pips" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></span>
+            <span class="desc">a fact, a sum, a one-line rewrite</span>
+          </button>
+          <button type="button" class="gear g2" role="radio" data-pos="2" aria-checked="false">
+            <span class="num">Gear 2</span>
+            <span class="name">Light</span>
+            <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
+            <span class="desc">short explanation, summarize, extract</span>
+          </button>
+          <button type="button" class="gear g3" role="radio" data-pos="3" aria-checked="false">
+            <span class="num">Gear 3</span>
+            <span class="name">Standard</span>
+            <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+            <span class="desc">multi-paragraph writing, simple code</span>
+          </button>
+          <button type="button" class="gear g4" role="radio" data-pos="4" aria-checked="false">
+            <span class="num">Gear 4</span>
+            <span class="name">Heavy</span>
+            <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span>
+            <span class="desc">multi-step reasoning, real code</span>
+          </button>
+          <button type="button" class="gear g5" role="radio" data-pos="5" aria-checked="false">
+            <span class="num">Gear 5</span>
+            <span class="name">Max</span>
+            <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span>
+            <span class="desc">hard math, architecture, long writing</span>
+          </button>
+        </div>
+        <p class="shifter-help">
+          Lighter gears use less energy. When the grid is busy, shift down.
+        </p>
+      </div>
     </section>
 
     <!-- Answer view -->
-    <section class="card" aria-labelledby="ask-h2">
-      <h2 id="ask-h2">Ask</h2>
-      <label for="prompt">Your prompt</label>
-      <textarea id="prompt" placeholder="Type a question&#8230;"></textarea>
-      <div class="row">
-        <button type="button" class="btn" id="ask-btn">Ask</button>
-        <label class="toggle">
-          <input type="checkbox" id="protected" />
-          Best answer
-        </label>
+    <section class="card window ask" aria-labelledby="ask-h2">
+      <div class="titlebar">
+        <h2 id="ask-h2">Ask</h2>
+        <span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span>
       </div>
-      <p class="shifter-help" id="protected-help">
-        Best answer never shifts down, even when the grid is busy.
-      </p>
+      <div class="window-body">
+        <label for="prompt">Your prompt</label>
+        <textarea id="prompt" placeholder="Type a question&#8230;"></textarea>
+        <div class="row">
+          <button type="button" class="btn" id="ask-btn">Ask</button>
+          <label class="toggle">
+            <input type="checkbox" id="protected" />
+            Best answer
+          </label>
+        </div>
+        <p class="shifter-help" id="protected-help">
+          Best answer never shifts down, even when the grid is busy.
+        </p>
 
-      <div id="answer" class="answer" aria-live="polite" hidden>
-        <div id="answer-text" class="answer-text"></div>
-        <div id="answer-meta" class="answer-meta"></div>
+        <div id="answer" class="answer" aria-live="polite" hidden>
+          <div id="answer-text" class="answer-text"></div>
+          <div id="answer-meta" class="answer-meta"></div>
+        </div>
+        <div id="answer-error" class="error" role="alert" hidden></div>
       </div>
-      <div id="answer-error" class="error" role="alert" hidden></div>
     </section>
 
-    <div class="row">
+    <div class="row footer">
       <button type="button" class="btn secondary" id="how-btn">How it works</button>
     </div>
 
     <!-- First-run guide (3 cards) -->
     <div id="guide" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title">
       <div class="guide">
-        <div class="dots" aria-hidden="true">
-          <i data-active="true"></i><i></i><i></i>
+        <div class="titlebar">
+          <div class="dots" aria-hidden="true">
+            <i data-active="true"></i><i></i><i></i>
+          </div>
+          <span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
-        <h3 id="guide-title"></h3>
-        <p id="guide-body"></p>
-        <div class="nav">
-          <button type="button" class="btn secondary" id="guide-skip">Skip</button>
-          <button type="button" class="btn" id="guide-next">Next</button>
+        <div class="window-body">
+          <h3 id="guide-title"></h3>
+          <p id="guide-body"></p>
+          <div class="nav">
+            <button type="button" class="btn secondary" id="guide-skip">Skip</button>
+            <button type="button" class="btn" id="guide-next">Next</button>
+          </div>
         </div>
       </div>
     </div>
