@@ -2,6 +2,9 @@
 
 Listens: prompt.received  ->  Emits: triage.decided.
 Serves: POST /v1/triage  ->  {gear, confidence, label, reason}  (< 150 ms).
+        With `observe: true` (a prompt the user really sent on claude.ai),
+        it also announces the prompt so Triage + Coordinator route it, and
+        returns that route. No answer is generated.
 
 Gears (see contracts/gears.json):
   1 Quick    - a fact, a sum, a one-line rewrite, very short
@@ -19,6 +22,7 @@ Two entry points:
 from __future__ import annotations
 
 import re
+import uuid
 
 # User-facing labels — exact strings from contracts/gears.json ("user_sees").
 GEAR_LABELS = {1: "Quick", 2: "Light", 3: "Standard", 4: "Heavy", 5: "Max"}
@@ -149,6 +153,9 @@ def classify_from_event(ev: dict) -> tuple[int, float, str]:
 # classification here and on_prompt uses it instead of the length heuristic.
 HINTS: dict[str, tuple[int, float, str]] = {}
 
+# Max route.decided entries the /v1/triage observe path keeps (oldest dropped).
+_MAX_ROUTES = 1024
+
 
 def classify_text(prompt: str) -> tuple[int, float, str]:
     """Best available text classification: trained model, else the rules."""
@@ -164,6 +171,10 @@ def classify_text(prompt: str) -> tuple[int, float, str]:
 def register(bus, app):
     """Wire the triage agent into the engine: bus subscription + HTTP route."""
 
+    # route.decided per prompt_id, so an observed prompt can return its route.
+    # Bounded: crowd prompts are never popped, so drop the oldest entries.
+    routes: dict[str, dict] = {}
+
     async def on_prompt(ev: dict) -> None:
         hint = HINTS.pop(ev.get("prompt_id"), None)
         gear, conf, reason = hint or classify_from_event(ev)
@@ -177,7 +188,13 @@ def register(bus, app):
             }
         )
 
+    async def on_route(ev: dict) -> None:
+        routes[ev.get("prompt_id")] = ev
+        if len(routes) > _MAX_ROUTES:
+            routes.pop(next(iter(routes)))
+
     bus.subscribe("prompt.received", on_prompt)
+    bus.subscribe("route.decided", on_route)
 
     @app.post("/v1/triage")
     async def triage(body: dict) -> dict:
@@ -185,11 +202,43 @@ def register(bus, app):
         # Prefer the trained classifier (A4-full); it falls back to these rules
         # internally if the model or its deps are unavailable.
         gear, conf, reason = classify_text(prompt)
-        return {
+        out = {
             "gear": gear,
             "confidence": round(conf, 2),
             "label": GEAR_LABELS[gear],
             "reason": reason,
         }
+        if not body.get("observe"):
+            return out
+
+        # The user really sent this prompt on claude.ai: announce it so the
+        # real Triage + Coordinator route it (the Grid Room sparks on the
+        # route). bus.publish awaits handlers inline, so prompt.received ->
+        # triage.decided -> route.decided has run by the time it returns.
+        prompt_id = body.get("prompt_id") or ("ext-" + uuid.uuid4().hex[:8])
+        HINTS[prompt_id] = (gear, conf, reason)
+        received = {
+            "type": "prompt.received",
+            "prompt_id": prompt_id,
+            "source": body.get("source", "extension"),
+            "chars": len(prompt),
+        }
+        if body.get("town"):
+            received["town"] = body["town"]
+        await bus.publish(received)
+        HINTS.pop(prompt_id, None)
+
+        route = routes.pop(prompt_id, None)
+        out["prompt_id"] = prompt_id
+        out["route"] = (
+            {
+                "gear_needed": route["gear_needed"],
+                "gear_used": route["gear_used"],
+                "deferred": route["deferred"],
+            }
+            if route
+            else None
+        )
+        return out
 
     return None

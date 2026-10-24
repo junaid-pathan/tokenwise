@@ -26,6 +26,21 @@ Owners: A = Aru (demand side), B = Junaid (supply side).
 { "gear": 1, "confidence": 0.92, "label": "Quick", "reason": "arithmetic, short" }
 ```
 
+Optional **observe** mode, for a prompt the user really sent on claude.ai (the
+content script calls it on send). The engine publishes `prompt.received` for it,
+so the real Triage + Coordinator route it (`triage.decided`, `route.decided`) and
+the Grid Room sparks it. No answer is generated. Without `observe`, no events
+are published.
+```json
+// request (prompt_id and source are optional; defaults "ext-<8 hex>" and "extension")
+{ "prompt": "what's 15% of 80", "observe": true, "prompt_id": "claude-1a2b3c4d", "source": "extension" }
+// response: the usual fields plus the prompt_id and the Coordinator's route
+// (route is null if nothing routed it, e.g. the Coordinator is not registered)
+{ "gear": 1, "confidence": 0.92, "label": "Quick", "reason": "arithmetic, short",
+  "prompt_id": "claude-1a2b3c4d",
+  "route": { "gear_needed": 1, "gear_used": 1, "deferred": false } }
+```
+
 ### POST /v1/answer
 ```json
 // request

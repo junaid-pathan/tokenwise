@@ -498,6 +498,21 @@
   let chatBaseline = null; // model selected when this chat opened
   let lastSent = { text: "", at: 0 };
 
+  // Announce a prompt really sent to Claude (/v1/triage observe mode, see
+  // contracts/api.md) so the engine's Triage + Coordinator route it and the Grid
+  // Room sparks it. No answer is generated. Engine offline is fine: fire and forget.
+  function observe(prompt) {
+    const promptId = "claude-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+    try {
+      chrome.runtime.sendMessage(
+        { type: "ds.triage", body: { prompt, observe: true, prompt_id: promptId } },
+        () => void chrome.runtime.lastError
+      );
+    } catch (e) {
+      /* extension reloaded under the page */
+    }
+  }
+
   function recordSend() {
     const prompt = currentPrompt();
     if ((!last || last.prompt !== prompt) && prompt.length >= 3) {
@@ -509,6 +524,7 @@
     const now = Date.now();
     if (last.prompt === lastSent.text && now - lastSent.at < 3000) return;
     lastSent = { text: last.prompt, at: now };
+    observe(last.prompt);
 
     const used = detectModel() || last.current;
     const baseline = chatBaseline || used;
