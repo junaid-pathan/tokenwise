@@ -18,6 +18,9 @@ from engine.llm import GenResult
 
 _GEARS_PATH = Path(__file__).resolve().parents[2] / "contracts" / "gears.json"
 
+_TIMEOUT_S = 60.0
+_RETRIES = 1  # one retry after the first attempt
+
 
 def _ollama_url() -> str:
     url = os.environ.get("OLLAMA_URL", "").strip()
@@ -54,9 +57,20 @@ def generate(gear: int, prompt: str, max_tokens: int = 512) -> GenResult:
     }
 
     t0 = time.perf_counter()
-    resp = httpx.post(url, json=payload, timeout=60.0)
-    resp.raise_for_status()
-    data = resp.json()
+    last_exc: Exception | None = None
+    for attempt in range(_RETRIES + 1):
+        try:
+            resp = httpx.post(url, json=payload, timeout=_TIMEOUT_S)
+            resp.raise_for_status()
+            data = resp.json()
+            break
+        except (httpx.HTTPError, ValueError) as exc:
+            last_exc = exc
+            if attempt < _RETRIES:
+                continue
+            raise RuntimeError(
+                f"ollama generate failed for gear {gear} after {_RETRIES + 1} attempts: {exc}"
+            ) from last_exc
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
     text = data.get("response", "")
