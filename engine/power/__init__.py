@@ -76,6 +76,23 @@ def _power_url() -> str:
     return os.environ.get("POWER_URL", "").strip().rstrip("/")
 
 
+def _estimate_watts() -> float:
+    """Fallback average draw (W). Prefer a gears.json hint if present, else the
+    idle baseline we measured, else a conservative constant. gears.json currently
+    carries no per-watt figure (est_wh_per_1k_out_tokens is null until the gate),
+    so this stays watts-based and documented."""
+    try:
+        data = json.loads(_GEARS_PATH.read_text(encoding="utf-8"))
+        hint = data.get("levels", {}).get("estimate_watts")
+        if hint:
+            return float(hint)
+    except Exception:
+        pass
+    if store.idle_watts:
+        return store.idle_watts
+    return _ESTIMATE_WATTS
+
+
 def _integrate(t0: float, t1: float, subtract_idle: bool = False) -> float | None:
     """Trapezoid-integrate watts over [t0, t1] (local time) -> joules.
 
@@ -106,7 +123,7 @@ def energy_between(t0: float, t1: float) -> tuple[float, str]:
     if measured is not None and store.reachable:
         return (measured, "measured")
     seconds = max(0.0, t1 - t0)
-    return (_ESTIMATE_WATTS * seconds, "estimated")
+    return (_estimate_watts() * seconds, "estimated")
 
 
 def joules_above_idle(t0: float, t1: float) -> tuple[float, str]:
@@ -115,7 +132,7 @@ def joules_above_idle(t0: float, t1: float) -> tuple[float, str]:
     if measured is not None and store.reachable:
         return (measured, "measured")
     seconds = max(0.0, t1 - t0)
-    return (max(0.0, _ESTIMATE_WATTS - store.idle()) * seconds, "estimated")
+    return (max(0.0, _estimate_watts() - store.idle()) * seconds, "estimated")
 
 
 async def _poll_loop(bus) -> None:
