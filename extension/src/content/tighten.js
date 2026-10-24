@@ -68,19 +68,19 @@
       }
     };
 
-    step("shouting caps", decap);
-    step("stretched words", (s) => s.replace(/([a-z])\1{2,}/gi, "$1"));
+    step("ALL CAPS", decap);
+    step("stretched words (sooo)", (s) => s.replace(/([a-z])\1{2,}/gi, "$1"));
     step("filler words", (s) => {
       for (const re of FILLER) {
         s = s.replace(re, (m) => FILLER_REPLACE[m.toLowerCase()] ?? "");
       }
       return s;
     });
-    step("repeated punctuation", (s) =>
+    step("extra !!! and ???", (s) =>
       s.replace(/([!?])[!?]+/g, "$1").replace(/\.{4,}/g, "...").replace(/,{2,}/g, ",")
     );
     step("repeated words", (s) => s.replace(/\b(\w+)(\s+\1\b)+/gi, "$1"));
-    step("emoji spam", (s) => s.replace(/(\p{Extended_Pictographic})(\s*\1)+/gu, "$1"));
+    step("repeated emoji", (s) => s.replace(/(\p{Extended_Pictographic})(\s*\1)+/gu, "$1"));
     step("extra blank lines", (s) =>
       s.replace(/[ \t]+$/gm, "").replace(/\n{2,}/g, "\n").replace(/[ \t]{2,}/g, " ").trim()
     );

@@ -2,7 +2,7 @@
 // Opens on every new chat. While you type it shows the prompt's gear, the Claude
 // model that fits it, and the energy you'd save by switching. Each sent prompt
 // is added to a per-user footprint (chrome.storage.local) shown at the top as
-// CO2, tree-time and oxygen saved. All energy numbers are estimates (estimates.js).
+// energy (as lightbulb time) and CO2 saved. Model energy figures are estimates (estimates.js).
 
 (() => {
   "use strict";
@@ -47,7 +47,7 @@
   const isNewChat = () => location.pathname === "/new" || location.pathname === "/";
 
   // --- stats ------------------------------------------------------------------
-  let stats = { prompts: 0, right_sized: 0, wh_used: 0, wh_saved: 0 };
+  let stats = { prompts: 0, right_sized: 0, wh_used: 0, wh_saved: 0, local: 0 };
 
   function loadStats() {
     try {
@@ -155,7 +155,7 @@
     h2 { font-family: var(--caps); font-size: 11px; font-weight: 700; margin: 0 0 8px;
       color: #3f3f3f; letter-spacing: 0.5px; text-transform: uppercase; }
 
-    /* Impact: big tree count + inventory slots */
+    /* Impact: big lightbulb-time count + inventory slots */
     .big { font-family: var(--caps); font-size: 24px; font-weight: 700; line-height: 1.1; color: #1f6b1a;
       text-shadow: 1px 1px 0 #fff; }
     .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
@@ -255,7 +255,7 @@
       </symbol>
     </svg>`;
 
-  const EMPTY = `<div class="empty">Start typing. I'll pick the right tool and model.</div>`;
+  const EMPTY = `<div class="empty">Type a question. I'll tell you which Claude model fits it and how much energy you can save.</div>`;
 
   const HTML = `
     ${PICK}
@@ -268,46 +268,46 @@
       </header>
       <section class="gui" aria-label="Your impact">
         <h2>Your impact</h2>
-        <div class="big" data-k="tree">0 tree-min</div>
-        <div class="sub">of a tree's CO₂ absorption saved, all time</div>
+        <div class="big" data-k="tree">💡 0 sec</div>
+        <div class="sub">of lightbulb power saved so far</div>
         <div class="slots">
-          <div class="slot green"><b data-k="co2">0 g</b><span>CO₂ avoided</span></div>
-          <div class="slot"><b data-k="o2">0 g</b><span>O₂ equiv.</span></div>
+          <div class="slot green"><b data-k="co2">0 g</b><span>CO₂ kept out of the air</span></div>
+          <div class="slot"><b data-k="o2">0</b><span>answered without Claude</span></div>
           <div class="slot"><b data-k="wh">0 Wh</b><span>energy saved</span></div>
         </div>
       </section>
       <div class="chat" data-k="flash" aria-live="polite"></div>
       <section class="gui" aria-label="This prompt">
-        <h2>This prompt</h2>
+        <h2>Your question</h2>
         <div data-k="live">${EMPTY}</div>
       </section>
       <section class="gui ask" aria-label="Ask here instead" data-k="ask" hidden>
-        <h2>⚡ Ask here instead</h2>
-        <div class="asksub" data-k="asksub">Simple enough for a small model. Skip Claude and answer it here.</div>
-        <button class="btn" data-k="askbtn">Ask here</button>
+        <h2>⚡ Answer it here, no Claude needed</h2>
+        <div class="asksub" data-k="asksub">This one's easy. A tiny AI can answer it with a fraction of the energy.</div>
+        <button class="btn" data-k="askbtn">Answer it here</button>
         <div class="askout" data-k="askout" aria-live="polite" hidden></div>
         <div class="askmeta" data-k="askmeta"></div>
       </section>
       <section class="gui tight" aria-label="Tighten your prompt" data-k="tight" hidden>
-        <h2>✂ Tighten · fewer tokens</h2>
+        <h2>✂ Shorter prompt, same meaning</h2>
         <div class="tnum" data-k="tnum"></div>
         <div class="tfix" data-k="tfix"></div>
         <div class="tprev" data-k="tprev"></div>
-        <button class="btn" data-k="apply">Apply</button>
+        <button class="btn" data-k="apply">Use shorter version</button>
       </section>
       <section class="gui" aria-label="Your footprint">
-        <h2>Your footprint</h2>
+        <h2>Your AI footprint</h2>
         <div class="slots two">
-          <div class="slot"><b data-k="prompts">0</b><span>prompts tracked</span></div>
-          <div class="slot green"><b data-k="right">–</b><span>right-sized</span></div>
-          <div class="slot"><b data-k="used">0 Wh</b><span>energy used</span></div>
-          <div class="slot"><b data-k="emitted">0 g</b><span>CO₂ emitted</span></div>
+          <div class="slot"><b data-k="prompts">0</b><span>questions asked</span></div>
+          <div class="slot green"><b data-k="right">–</b><span>used the right model</span></div>
+          <div class="slot"><b data-k="used">0 Wh</b><span>energy you used</span></div>
+          <div class="slot"><b data-k="emitted">0 g</b><span>CO₂ you caused</span></div>
         </div>
       </section>
       <footer>
         <div class="chat"><span class="dot" data-k="dot"></span><span data-k="engine">Checking engine…</span></div>
-        <div>Estimates: per-answer energy scaled from a 0.24 Wh median prompt by relative model price;
-        New England grid ≈ ${DS.G_CO2_PER_WH} g CO₂/Wh; a tree absorbs ≈ 22 kg CO₂/yr.</div>
+        <div>Lightbulb = a 10 W LED. Claude model energy is estimated; our GPU's energy is measured live.
+        CO₂ uses the New England grid (≈ ${DS.G_CO2_PER_WH} g per Wh).</div>
         <button class="btn small" data-k="reset">Reset my stats</button>
       </footer>
     </aside>`;
@@ -329,7 +329,7 @@
     $("apply").addEventListener("click", applyTighten);
     $("askbtn").addEventListener("click", askHere);
     $("reset").addEventListener("click", () => {
-      stats = { prompts: 0, right_sized: 0, wh_used: 0, wh_saved: 0 };
+      stats = { prompts: 0, right_sized: 0, wh_used: 0, wh_saved: 0, local: 0 };
       saveStats();
       renderImpact();
     });
@@ -342,10 +342,12 @@
   }
 
   // --- formatting ---------------------------------------------------------------
-  function fmtTree(min) {
-    if (min < 60) return `${min.toFixed(min < 10 ? 1 : 0)} tree-min`;
-    if (min < 60 * 24) return `${(min / 60).toFixed(1)} tree-hours`;
-    return `${(min / 1440).toFixed(1)} tree-days`;
+  // Energy as time a 10 W LED bulb could run on it: 1 Wh = 6 minutes of light.
+  function fmtBulb(wh) {
+    const sec = wh * 360;
+    if (sec < 60) return `${Math.round(sec)} sec`;
+    if (sec < 3600) return `${(sec / 60).toFixed(sec < 600 ? 1 : 0)} min`;
+    return `${(sec / 3600).toFixed(1)} hours`;
   }
   const fmtG = (g) => (g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${g.toFixed(g < 10 ? 2 : 0)} g`);
   const fmtWh = (wh) => (wh >= 1000 ? `${(wh / 1000).toFixed(2)} kWh` : `${wh.toFixed(2)} Wh`);
@@ -353,9 +355,9 @@
   function renderImpact() {
     if (!root) return;
     const i = DS.impact(stats.wh_saved);
-    $("tree").textContent = fmtTree(i.tree_min);
+    $("tree").textContent = `💡 ${fmtBulb(i.wh)}`;
     $("co2").textContent = fmtG(i.co2_g);
-    $("o2").textContent = fmtG(i.o2_g);
+    $("o2").textContent = String(stats.local || 0);
     $("wh").textContent = fmtWh(i.wh);
     $("prompts").textContent = String(stats.prompts);
     $("right").textContent = stats.prompts ? `${Math.round((stats.right_sized / stats.prompts) * 100)}%` : "–";
@@ -365,11 +367,10 @@
 
   function renderEngine() {
     $("dot").style.background = engineLive ? "#22c55e" : "#eab308";
-    $("engine").textContent = engineLive ? "Classifier: TokenWise engine (live)" : "Classifier: offline rules";
+    $("engine").textContent = engineLive ? "Smart picker online" : "Smart picker in basic mode (engine offline)";
   }
 
   // --- live recommendation ---------------------------------------------------------
-  const TIERS = { 1: "Wooden", 2: "Stone", 3: "Iron", 4: "Diamond", 5: "Netherite" };
   let last = null; // { prompt, gear, model, current }
 
   function renderLive(t, prompt) {
@@ -384,7 +385,7 @@
         return `<div class="tool t${n}${on}" role="listitem" aria-current="${!!on}">
           <span class="n" aria-hidden="true">${n}</span>
           <svg class="pick" aria-hidden="true" focusable="false"><use href="#ds-pick" /></svg>
-          <span class="nm">${TIERS[n]}</span></div>`;
+          <span class="nm">${DS.GEARS[n].label}</span></div>`;
       })
       .join("");
     const pips = [1, 2, 3, 4, 5].map((n) => `<i${n <= t.gear ? ' class="on"' : ""}></i>`).join("");
@@ -393,22 +394,22 @@
     const diff = DS.WH_PER_ANSWER[current] - DS.WH_PER_ANSWER[rec];
     if (diff > 0) {
       const i = DS.impact(diff);
-      advice = `<div class="advice save">You're on <b>${current}</b>. Switch to <b>${rec}</b> to save
-        ~${fmtWh(diff)} on this answer (${fmtG(i.co2_g)} CO₂ ≈ ${fmtTree(i.tree_min)}).
-        ${Math.round((diff / DS.WH_PER_ANSWER[current]) * 100)}% less energy.</div>`;
+      advice = `<div class="advice save">You're on <b>${current}</b>. <b>Switch to ${rec}</b>: same answer,
+        <b>${Math.round((diff / DS.WH_PER_ANSWER[current]) * 100)}% less energy</b>
+        (💡 ${fmtBulb(diff)} of lightbulb power, ${fmtG(i.co2_g)} CO₂).</div>`;
     } else if (diff < 0) {
-      advice = `<div class="advice up">You're on <b>${current}</b>. This one may need <b>${rec}</b> for a good answer.</div>`;
+      advice = `<div class="advice up">You're on <b>${current}</b>. This one is hard. <b>Switch to ${rec}</b> for a good answer.</div>`;
     } else {
-      advice = `<div class="advice ok">You're on <b>${current}</b> — right tool for this prompt. 👍</div>`;
+      advice = `<div class="advice ok">You're on <b>${current}</b>. Perfect pick for this question. 👍</div>`;
     }
 
     const live = $("live");
     live.innerHTML = `
       <div class="hotbar" role="list" aria-label="Gear ${t.gear} of 5">${gears}</div>
       <div class="tip t${t.gear}">
-        <div class="tt">${TIERS[t.gear]} Pickaxe</div>
-        <div class="model">Best fit: Claude ${rec}</div>
-        <div class="reason">Gear ${t.gear} · ${g.label} · ${Math.round(t.confidence * 100)}% sure</div>
+        <div class="tt">Gear ${t.gear}: ${g.label}</div>
+        <div class="model">Use Claude ${rec}</div>
+        <div class="reason">${Math.round(t.confidence * 100)}% confident</div>
         <div class="pips" aria-hidden="true">${pips}</div>
       </div>
       ${advice}`;
@@ -434,7 +435,7 @@
     card.hidden = gear > 2;
     $("askbtn").hidden = false;
     $("askbtn").disabled = false;
-    $("askbtn").textContent = "Ask here";
+    $("askbtn").textContent = "Answer it here";
     $("askout").hidden = true;
     $("askout").textContent = "";
     $("askmeta").textContent = "";
@@ -477,31 +478,33 @@
     askState = "loading";
     const btn = $("askbtn");
     btn.disabled = true;
-    btn.textContent = "Asking a small model…";
+    btn.textContent = "Thinking…";
 
     let text, meta, whUsed;
     const quick = DS.quickAnswer(prompt);
     if (quick !== null) {
       text = quick;
       whUsed = 0;
-      meta = "Answered in your browser · no model, no network · 0 Wh";
+      meta = "Solved instantly. No AI needed, zero energy";
     } else {
       const r = await askEngine(prompt);
       if (!r) {
         askState = "idle";
         btn.disabled = false;
-        btn.textContent = "Ask here";
+        btn.textContent = "Answer it here";
         $("askmeta").textContent = "Couldn't reach the TokenWise engine on localhost:8000. Start it, or send this to Claude.";
         return;
       }
       text = r.text;
       whUsed = (Number(r.energy_j) || 0) / 3600;
-      meta = `Gear ${r.gear_used} · ${r.model} · ${r.latency_ms} ms · ${Number(r.energy_j).toFixed(1)} J ${r.energy_source}`;
+      const how = r.energy_source === "measured" ? "measured live" : "estimated";
+      meta = `Answered by a tiny AI (${r.model}) in ${(r.latency_ms / 1000).toFixed(1)}s, using 💡 ${fmtBulb(whUsed)} of lightbulb power (${how})`;
     }
 
     const whSaved = Math.max(0, DS.WH_PER_ANSWER[current] - whUsed);
     stats.prompts += 1;
     stats.right_sized += 1;
+    stats.local = (stats.local || 0) + 1;
     stats.wh_used += whUsed;
     stats.wh_saved += whSaved;
     saveStats();
@@ -511,8 +514,8 @@
     btn.hidden = true;
     $("askout").textContent = text;
     $("askout").hidden = false;
-    $("askmeta").textContent = `${meta} · saved ~${fmtWh(whSaved)} vs ${current}`;
-    $("flash").textContent = `+${fmtTree(DS.impact(whSaved).tree_min)} saved — answered without Claude 🌱`;
+    $("askmeta").textContent = `${meta}. Saved 💡 ${fmtBulb(whSaved)} vs ${current}.`;
+    $("flash").textContent = `💡 +${fmtBulb(whSaved)} of lightbulb power saved, answered without Claude`;
     setTimeout(() => ($("flash").textContent = ""), 4000);
 
     pastedExtra = [];
@@ -534,8 +537,8 @@
       return;
     }
     tightText = r.text;
-    $("tnum").textContent = `${r.before} → ${r.after} tokens · ${Math.round((r.saved / r.before) * 100)}% fewer`;
-    $("tfix").textContent = `Fixed: ${r.changes.join(", ")}`;
+    $("tnum").textContent = `${Math.round((r.saved / r.before) * 100)}% shorter for the AI`;
+    $("tfix").textContent = `${r.before} → ${r.after} tokens (the pieces AI reads). Removed: ${r.changes.join(", ")}`;
     $("tprev").textContent = r.text;
     card.hidden = false;
   }
@@ -556,7 +559,7 @@
       el.textContent = tightText;
       el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText" }));
     }
-    $("flash").textContent = "Prompt tightened ✂️";
+    $("flash").textContent = "✂ Prompt shortened";
     setTimeout(() => ($("flash").textContent = ""), 3000);
     onInput();
   }
@@ -651,9 +654,9 @@
 
     const flash = $("flash");
     if (whSaved > 0) {
-      flash.textContent = `+${fmtTree(DS.impact(whSaved).tree_min)} saved by using ${used} 🌱`;
+      flash.textContent = `💡 +${fmtBulb(whSaved)} of lightbulb power saved by using ${used}`;
     } else if (used === last.model) {
-      flash.textContent = "Right-sized ✓";
+      flash.textContent = "✓ Right model picked";
     } else {
       flash.textContent = "";
     }
