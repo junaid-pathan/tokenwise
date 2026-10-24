@@ -6,8 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import type { DownshiftEvent } from "../../contracts/events";
 import Hud from "./hud/Hud";
 import Scene from "./scene/Scene";
+import World from "./scene/world/World";
 
 const WS_URL = "ws://localhost:8000/v1/stream";
+// The voxel world is the default view; ?view=classic shows the state map + HUD.
+const CLASSIC = new URLSearchParams(window.location.search).get("view") === "classic";
 
 export default function App() {
   const [events, setEvents] = useState<DownshiftEvent[]>([]);
@@ -39,6 +42,14 @@ export default function App() {
       wsRef.current?.close();
     };
   }, []);
+
+  if (!CLASSIC) {
+    return (
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <World events={events} connected={connected} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
