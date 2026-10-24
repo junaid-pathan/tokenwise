@@ -39,6 +39,7 @@ MODULES = [
     "engine.agents.grid",         # A
     "engine.agents.utility",      # B
     "engine.agents.narrator",     # B
+    "sim.crowd",                  # B: simulated MA-town users (inert until grid.load; CROWD_SIM=0 disables)
     "engine.mock_stream",         # JOINT: only active when DOWNSHIFT_MOCK=1
 ]
 
