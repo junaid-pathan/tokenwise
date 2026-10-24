@@ -24,6 +24,10 @@ const API_STORAGE_KEY = "downshift_api";
 // ---- state ----
 let gridState = initialGridState();
 let lastLevel = null;
+// Once a connection attempt fails, we treat the engine as offline and
+// reconnect silently in the background rather than flapping back to
+// "Connecting" on every retry. "Connecting" is only shown on the first attempt.
+let everFailed = false;
 const shifter = createShifter("auto");
 
 // ---- grid light + banner + narrator rendering ----
@@ -45,10 +49,20 @@ function renderGrid() {
     document.documentElement.style.setProperty("--level-color", "#8b949e");
     return;
   }
+  // Only the first attempt (before any failure) shows "Connecting". After a
+  // failure we keep showing "Engine offline" while reconnecting silently, so
+  // the user sees a clear, stable offline state rather than endless flapping.
   if (gridState.connection === "connecting" && gridState.level == null) {
-    word.textContent = "Connecting";
-    load.textContent = "";
-    light.setAttribute("aria-label", "Grid status: connecting");
+    if (everFailed) {
+      word.textContent = "Engine offline";
+      load.textContent = "";
+      light.setAttribute("aria-label", "Grid status: engine offline, reconnecting");
+      document.documentElement.style.setProperty("--level-color", "#8b949e");
+    } else {
+      word.textContent = "Connecting";
+      load.textContent = "";
+      light.setAttribute("aria-label", "Grid status: connecting");
+    }
     return;
   }
 
@@ -108,6 +122,8 @@ function handleEvent(evt) {
 }
 
 function setConnection(status) {
+  if (status === "offline") everFailed = true;
+  if (status === "online") everFailed = false;
   gridState = { ...gridState, connection: status };
   renderGrid();
 }
