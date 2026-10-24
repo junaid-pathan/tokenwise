@@ -394,9 +394,9 @@
     const diff = DS.WH_PER_ANSWER[current] - DS.WH_PER_ANSWER[rec];
     if (diff > 0) {
       const i = DS.impact(diff);
-      advice = `<div class="advice save">You're on <b>${current}</b>. <b>Switch to ${rec}</b>: same answer,
-        <b>${Math.round((diff / DS.WH_PER_ANSWER[current]) * 100)}% less energy</b>
-        (💡 ${fmtBulb(diff)} of lightbulb power, ${fmtG(i.co2_g)} CO₂).</div>`;
+      advice = `<div class="advice save">You're on <b>${current}</b>. <b>Switch to ${rec}</b>:
+        <b>~${Math.round((diff / DS.WH_PER_ANSWER[current]) * 100)}% less energy</b> (estimate)
+        · 💡 ${fmtBulb(diff)} of lightbulb power.</div>`;
     } else if (diff < 0) {
       advice = `<div class="advice up">You're on <b>${current}</b>. This one is hard. <b>Switch to ${rec}</b> for a good answer.</div>`;
     } else {
