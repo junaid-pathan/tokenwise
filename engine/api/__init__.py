@@ -13,6 +13,7 @@ is measured with engine.power.energy_between around the call; it reports
 
 from __future__ import annotations
 
+import asyncio
 import re
 import time
 import uuid
@@ -64,8 +65,11 @@ def register(bus, app):
         gear = _resolve_gear(mode, prompt)
 
         # Generate, timing the call so we can integrate energy over the window.
+        # Generate off the event loop so the async power sampler keeps polling
+        # during the call (otherwise the answer window has no samples and energy
+        # falls back to estimated).
         t0 = time.time()
-        result = _generate(gear, prompt)
+        result = await asyncio.to_thread(_generate, gear, prompt)
         t1 = time.time()
 
         energy_j, energy_source = power.energy_between(t0, t1)
