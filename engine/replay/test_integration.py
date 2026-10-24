@@ -28,8 +28,28 @@ def test_full_replay_drives_grid_and_utility(capsys):
     async def collector(event: dict) -> None:
         collected.append(dict(event))
 
+    # Isolate the shared singleton bus: other tests in this session open their
+    # own TestClients, and each startup re-runs register_all(), accumulating a
+    # fresh set of agent subscribers on the singleton. Snapshot and clear so
+    # exactly ONE set of agents (registered by our TestClient below) is active,
+    # then restore afterwards so we don't disturb other tests.
+    saved_subs = {k: list(v) for k, v in bus._subs.items()}
+    saved_wild = list(bus._wildcard)
+    bus._subs.clear()
+    bus._wildcard.clear()
     bus.subscribe("*", collector)
 
+    try:
+        _run_and_assert(client_collected=collected)
+    finally:
+        bus._subs.clear()
+        bus._subs.update(saved_subs)
+        bus._wildcard.clear()
+        bus._wildcard.extend(saved_wild)
+
+
+def _run_and_assert(client_collected: list[dict]) -> None:
+    collected = client_collected
     with TestClient(app) as client:
         # Whole day in ~6 real seconds.
         r = client.post("/v1/demo/replay", json={"date": "2025-06-24", "speed": 14400})
