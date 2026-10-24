@@ -52,7 +52,9 @@ Returns the latest `grid.state` event body.
 
 ### POST /v1/demo/replay
 ```json
-{ "date": "2025-06-24", "speed": 480 }   // speed = replay minutes per real second
+{ "date": "2025-06-24", "speed": 480 }
+// speed = replay SECONDS per real second. 480 is the default: 24 h of replay
+// (86,400 s) in 3 real minutes (180 s). 960 would be 24 h in 90 s.
 ```
 
 ### POST /v1/utility/request
