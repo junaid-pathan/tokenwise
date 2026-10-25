@@ -75,7 +75,8 @@ _MAX_RE = re.compile(
     r"\b(prove|proof|theorem|derive|architecture|design (a|an) (system|"
     r"distributed|scalable)|scalable system|microservices?|trade[- ]?offs?|"
     r"optimi[sz]ation problem|np[- ]hard|dynamic programming|"
-    r"research (paper|proposal)|dissertation|formal (verification|proof))\b",
+    r"research (paper|proposal)|dissertation|formal (verification|proof)|"
+    r"multiverse|parallel universes?)\b",
     re.IGNORECASE,
 )
 

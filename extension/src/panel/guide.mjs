@@ -4,7 +4,7 @@
 export const GUIDE_CARDS = [
   {
     title: "Five tools, one hotbar",
-    body: "Wooden, Stone, Iron, Diamond, Netherite: five pickaxes from lightest to strongest. Pick one, or leave it on Auto and Downshift picks the right tool for each prompt.",
+    body: "Wooden, Stone, Iron, Diamond, Netherite: five pickaxes from lightest to strongest. Pick one, or leave it on Auto and TokenWise picks the right tool for each prompt.",
   },
   {
     title: "The grid light",

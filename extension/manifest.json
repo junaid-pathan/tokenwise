@@ -1,20 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Downshift",
-  "version": "0.1.0",
-  "description": "Puts AI in the right gear. Small models for easy prompts, big ones only when needed.",
-  "action": { "default_title": "Downshift", "default_popup": "src/panel/index.html" },
+  "name": "TokenWise",
+  "version": "0.2.0",
+  "description": "Puts AI in the right gear. Picks the right-size Claude model for each prompt and tracks the carbon you save.",
+  "action": { "default_title": "TokenWise", "default_popup": "src/panel/index.html" },
   "permissions": ["activeTab", "storage"],
   "host_permissions": [
-    "https://chatgpt.com/*",
-    "https://chat.openai.com/*",
     "https://claude.ai/*",
     "http://localhost:8000/*"
   ],
+  "background": { "service_worker": "src/background.js" },
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://claude.ai/*"],
-      "js": ["src/content/content.js"]
+      "matches": ["https://claude.ai/*"],
+      "js": ["src/content/estimates.js", "src/content/tighten.js", "src/content/content.js"],
+      "run_at": "document_idle"
     }
   ]
 }
