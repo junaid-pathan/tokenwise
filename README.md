@@ -26,7 +26,7 @@ Tokenwise gives AI a dimmer. It pulls three levers:
 
 1. **Right-size every prompt.** A trained classifier gives each prompt one of five tiers (we draw them as pickaxes, Wooden to Netherite), so easy prompts run on small, efficient models and only hard ones reach the big ones.
 2. **Follow the grid.** Five agents watch real grid load. When the grid goes red, the utility asks for a cut, and the coordinator delivers it by shifting traffic down a tier and deferring batch work. It reports what it actually saved, and the utility accepts or pushes back.
-3. **Leaner prompts.** *In progress:* trimming the prompt and nudging toward shorter answers, so fewer tokens are spent per question.
+3. **Leaner prompts.** A "Shorter prompt" card on claude.ai strips filler, ALL CAPS, repeated punctuation and repeated words, so fewer tokens are spent per question.
 
 Then it **proves it live**: a voxel diorama of Holyoke, MA, where every prompt flies from a home to the data center, the sky turns red when the grid peaks, and a scorecard compares joules per answer with and without Tokenwise.
 
@@ -84,6 +84,13 @@ Every component talks only through an **event bus** (`prompt.received → triage
 **The browser extension** (`extension/`):
 
 - **claude.ai:** every prompt you send is classified and routed by the real agents, and shows up in the world as your orb.
+- **claude.ai sidebar** (opens on every new chat):
+  - **Five gears:** each question is sorted live as you type, Quick to Max.
+  - **Right model:** "You're on Opus. Switch to Haiku: ~80% less energy." It also says when a question *needs* the big model.
+  - **Answer it here:** easy questions skip Claude; math is solved in the browser, other questions go to the tiny model on the Colab GPU, with energy measured live.
+  - **Shorter prompt:** one click to use a trimmed version of your prompt.
+  - **Your impact / footprint:** energy saved (as lightbulb time), CO₂ avoided, questions answered without Claude, and % sent to the right model. Per-model energy is an estimate (0.24 Wh median prompt scaled by relative API price, ≈ 1 : 3 : 5); CO₂ uses ≈ 0.25 g per Wh.
+  - Clicking the gear badge answers the prompt right in the page.
 - **Side panel:** a pickaxe hotbar to choose a tier (or Auto), a grid status beacon, the narrator, and "Ask me anything", which answers on the chosen tier and shows time, energy and Wh saved.
 
 ## Results so far
@@ -180,8 +187,9 @@ One PRD row = one branch = one PR, branched from the latest `main`. Edit only th
 
 ## Roadmap
 
-- Leaner prompts: trimming prompts and nudging toward shorter answers
-- Carbon view: CO₂ and Wh saved per user on claude.ai (in review)
+- Nudging toward shorter answers, not just shorter prompts
+- Measured per-model energy from providers instead of estimates
+- ChatGPT and Gemini support in the extension
 - Live grid feed for "now" alongside the replay
 - An OpenAI-compatible endpoint, so a company can switch to Tokenwise by changing one line
 
